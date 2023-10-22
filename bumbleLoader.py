@@ -16,11 +16,11 @@ from selenium import webdriver
 
 
 class bumbleLoader:
-    def __init__(self):
+    def __init__(self, url="https://bumble.com/get-started"):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
-        self.driver.get("https://bumble.com/get-started")
+        self.driver.get(url)
         self.model = SimpleCNN()
         self.model.load_state_dict(torch.load('model_v2.pth'))
         self.model.eval()
