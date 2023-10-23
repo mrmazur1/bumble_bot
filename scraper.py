@@ -27,7 +27,7 @@ class scrapper:
             count = 0
             urls = set()
             end = time.time()+60
-            while count < nums:
+            while count < nu:
                 #curr =
                 try:
                     # if curr > end:
