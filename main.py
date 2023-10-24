@@ -7,6 +7,5 @@ from scraper import scrapper
 if __name__ == "__main__":
     bl = bumbleLoader()
     bl.load()
-    bl.start()
-    cookieManager.run()
+    bl.start(num_swipes=5)
     print("done")
