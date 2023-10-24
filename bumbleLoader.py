@@ -55,8 +55,8 @@ class bumbleLoader:
                                       '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
         self.imget = imageGetter()
 
-    def start(self):
-        for i in range(2):
+    def start(self, num_swipes=2):
+        for i in range(num_swipes):
             self.driver.find_element(By.XPATH,
                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[1]/div/figure/div/div/span').click()
             try:
@@ -76,7 +76,7 @@ class bumbleLoader:
                 self.like.click()
             else:
                 self.dislike.click()
-            time.sleep(3)
+            time.sleep(1)
 
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
