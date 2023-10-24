@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import torch.nn.functional as F
+import uuid
+import shutil
 
 from simpleCNN import SimpleCNN, myTransform
 from downloadImage import imageGetter
@@ -22,7 +24,7 @@ class bumbleLoader:
         self.driver = webdriver.Edge(service=edge_service)
         self.driver.get(url)
         self.model = SimpleCNN()
-        self.model.load_state_dict(torch.load('model_v2.pth'))
+        self.model.load_state_dict(torch.load('model_test.pth'))
         self.model.eval()
 
     def load(self):
@@ -72,11 +74,15 @@ class bumbleLoader:
             self.driver.find_element(By.XPATH,
                                 '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
             pred = self.predict('img.jpg', 'img.jpg')
+            random_name = uuid.uuid4().hex
             if pred == 'hot':
                 self.like.click()
+                shutil.move('img.jpg', f"outputs/liked/{random_name}.jpg")
             else:
                 self.dislike.click()
+                shutil.move('img.jpg', f"outputs/disliked/{random_name}.jpg")
             time.sleep(1)
+        self.driver.quit()
 
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
