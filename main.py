@@ -11,7 +11,9 @@ from scraper import scrapper
 
 
 if __name__ == "__main__":
-    bl = bumbleLoader()
-    bl.load()
-    bl.start(num_swipes=5)
+    # bl = bumbleLoader()
+    # bl.load()
+    # bl.start(num_swipes=5)
+    #cookieManager.run()
+    cookieManager.load_cookies()
     print("done")
