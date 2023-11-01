@@ -124,6 +124,7 @@ class bumbleLoader:
                 if pred == 'hot':
                     liked+=1
             except Exception as e:
+                numImages-=1
                 pass
             self.down.click()
         #self.getImage()
