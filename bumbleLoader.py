@@ -44,45 +44,94 @@ class bumbleLoader:
             print(e.msg)
             self.driver.quit()
         #logged in at this point
-        time.sleep(2)
+        #time.sleep(5)
         self.close_messages()
-        self.like = self.driver.find_element(By.XPATH,
-                                   '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
-        self.dislike = self.driver.find_element(By.XPATH,
-                                      '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
+        #wait for page to load
+        try:
+            photo = WebDriverWait(self.driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
+        finally:
+            pass
+        self.like = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
+        self.dislike = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
+        self.down = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
+        self.up = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
         self.imget = imageGetter()
 
     def start(self, num_swipes=2):
         for i in range(num_swipes):
             self.close_messages()
-            self.driver.find_element(By.XPATH,
-                                '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[1]/div/figure/div/div/span').click()
             try:
                 photo = WebDriverWait(self.driver, 30).until(
-                        EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[1]/div/span/img')))
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
             finally:
                 pass
             name = self.driver.find_element(By.XPATH,
                                        '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[2]/section/header/h1/span[1]')
-            picture_Url = photo.get_attribute('src')
-            self.imget.getImage(picture_Url)
             print(name.text)
-            self.driver.find_element(By.XPATH,
-                                '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
-            pred = self.predict('img.jpg', 'img.jpg')
-            random_name = uuid.uuid4().hex
-            if pred == 'hot': #like
+            pred = self.rateImages()
+            if pred: #like
                 self.like.click()
-                shutil.move('img.jpg', f"outputs/liked/{random_name}.jpg")
+                self.moveFiles(f"tmp/", f"outputs/liked/{str(i)}/")
             else: #dislike
                 self.dislike.click()
-                shutil.move('img.jpg', f"outputs/disliked/{random_name}.jpg")
+                self.moveFiles(f"tmp/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
         self.driver.quit()
 
+    def moveFiles(self, source, destination):
+        if os.path.exists(destination):
+            os.rmdir(destination)
+            os.makedirs(destination)
+        for file in os.listdir(source):
+            source_path = os.path.join(source, file)
+            destination_path = os.path.join(destination, file)
+            shutil.move(source_path, destination_path)
+
+    def getImage(self, element):
+        element.click()
+        try:
+            photo = WebDriverWait(self.driver, 30).until(
+                EC.presence_of_element_located((By.XPATH,
+                                                '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[1]/div/span/img')))
+        finally:
+            pass
+        picture_Url = photo.get_attribute('src')
+        path, filename = self.imget.getImage(picture_Url)
+        self.driver.find_element(By.XPATH,
+                                 '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
+        return path, filename
+
+    def rateImages(self):
+        numImages, liked = 0, 0
+        end = False
+        extenders = self.driver.find_elements(By.TAG_NAME, 'span')
+        for extender in extenders:
+            if extender.get_attribute('class') != 'icon icon--size-m':
+                 continue
+            while not extender.is_displayed():
+                if 'is-disabled' in self.down.get_attribute('class'):
+                    end = True
+                    break
+                self.down.click()
+                time.sleep(1)
+            time.sleep(1)
+            if end: break
+            numImages+=1
+            try:
+                img_path, img_name = self.getImage(extender)
+                pred = self.predict(img_path, img_name)
+                if pred == 'hot':
+                    liked+=1
+            except Exception as e:
+                pass
+            self.down.click()
+        #self.getImage()
+        return liked > numImages//2
+
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
-        input_image = Image.open(picture_path)
+        input_image = Image.open(picture_path+filename)
         input_tensor = myTransform().transform_input(input_image)
         input_batch = input_tensor.unsqueeze(0)  # Add a batch dimension
 
