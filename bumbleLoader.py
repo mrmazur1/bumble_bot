@@ -2,7 +2,7 @@ import os
 import time
 
 from PIL import Image
-from selenium.common import WebDriverException
+from selenium.common import WebDriverException, TimeoutException
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -15,10 +15,11 @@ from simpleCNN import SimpleCNN, myTransform
 from downloadImage import imageGetter
 import torch
 from selenium import webdriver
+import cookieManager
 
 
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com/get-started"):
+    def __init__(self, url="https://bumble.com"):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -28,29 +29,23 @@ class bumbleLoader:
         self.model.eval()
 
     def load(self):
+        cookieManager.load_cookies(self.driver) #load password stored in cookie
+        self.close_messages()  # close annoying popups
+        #login
         try:
-            iframe = self.driver.find_element(By.ID, 'sp_message_iframe_810475')
-            self.driver.switch_to.frame(iframe)
-            button = self.driver.find_element(By.TAG_NAME, 'button')
-            button.click()
-        except WebDriverException:
-            pass
-        self.driver.switch_to.parent_frame()
-        phone = self.driver.find_element(By.XPATH,
-                                    '//*[@id="main"]/div/div[1]/div[2]/main/div/div[3]/form/div[3]/div/span/span/span')
-        phone.click()
-        phone = self.driver.find_element(By.XPATH, '//*[@id="phone"]')
-        phone.send_keys('2018208304')
-        self.driver.find_element(By.XPATH,
-                            '//*[@id="main"]/div/div[1]/div[2]/main/div/div[3]/form/div[4]/button/span/span/span').click()
-
-        try:
+            #wait for log in button
             element = WebDriverWait(self.driver, 60).until(
-                EC.presence_of_element_located((By.XPATH,  '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span'))
+                EC.presence_of_element_located((By.XPATH,
+                                                '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a'))
             )
-        finally:
-            pass
-
+            self.driver.find_element(By.XPATH,
+                                '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a').click()
+        except TimeoutException as e:
+            print(e.msg)
+            self.driver.quit()
+        #logged in at this point
+        time.sleep(2)
+        self.close_messages()
         self.like = self.driver.find_element(By.XPATH,
                                    '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
         self.dislike = self.driver.find_element(By.XPATH,
@@ -59,6 +54,7 @@ class bumbleLoader:
 
     def start(self, num_swipes=2):
         for i in range(num_swipes):
+            self.close_messages()
             self.driver.find_element(By.XPATH,
                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[1]/div[1]/article/div[1]/div/figure/div/div/span').click()
             try:
@@ -75,10 +71,10 @@ class bumbleLoader:
                                 '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
             pred = self.predict('img.jpg', 'img.jpg')
             random_name = uuid.uuid4().hex
-            if pred == 'hot':
+            if pred == 'hot': #like
                 self.like.click()
                 shutil.move('img.jpg', f"outputs/liked/{random_name}.jpg")
-            else:
+            else: #dislike
                 self.dislike.click()
                 shutil.move('img.jpg', f"outputs/disliked/{random_name}.jpg")
             time.sleep(1)
@@ -104,5 +100,16 @@ class bumbleLoader:
         print(f"outputs: {output}\n")
         return predicted_class
         # os.remove('img.jpg')
+
+    def close_messages(self):
+        iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
+        for frame in iframes:
+            # time.sleep(250/1000)
+            self.driver.switch_to.frame(frame)
+            inner = self.driver.find_elements(By.CSS_SELECTOR, 'button')
+            for inVal in inner:
+                if 'Continue' in inVal.get_attribute('title'):
+                    inVal.click()
+            self.driver.switch_to.parent_frame()
 
 #TODO finish bumbleLoader
