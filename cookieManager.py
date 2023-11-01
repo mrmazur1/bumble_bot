@@ -3,6 +3,7 @@ import pickle
 import time
 
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -47,13 +48,21 @@ def load_cookies():
     print()
     iframes = driver.find_elements(By.TAG_NAME, 'iframe')
     for frame in iframes:
-        time.sleep(250/1000)
+        #time.sleep(250/1000)
         driver.switch_to.frame(frame)
         inner = driver.find_elements(By.CSS_SELECTOR, 'button')
         for inVal in inner:
             if 'message-button' in inVal.get_attribute('class'):
                 inVal.click()
         driver.switch_to.parent_frame()
-    driver.find_element(By.XPATH, '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a').click()
-    time.sleep(10)
-    print()
+    try:
+        element = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a'))
+        )
+        driver.find_element(By.XPATH, '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a').click()
+    except TimeoutException as e:
+        print(e.msg)
+        driver.quit()
+    time.sleep(2)
+
