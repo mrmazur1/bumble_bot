@@ -18,37 +18,38 @@ if __name__ == "__main__":
     # bl.start()
     # cookieManager.run()
 
-    # trainer = Trainer()
-    # trainer.train_model('model_test.pth', 'NN_data/hot_or_not_oct_23', 4, 10)
 
-    model = SimpleCNN()
-    model.load_state_dict(torch.load('model_test.pth'))
-    model.eval()
+    trainer = Trainer()
+    trainer.train_model('model_4.pth', 'NN_data/hot_or_not_oct_23', 4, 2)
 
-    transform = myTransform().transform
-    # model = model.to('cuda')
-
-    class_labels = ['Hot', 'Not']  # Replace with your actual class labels
-
-    direc = "NN_data/hot_or_not_oct_23/not/"
-    cnt = 0
-    for file in os.listdir(direc):
-        if cnt > 4:
-            break
-        filename = os.fsdecode(file)
-        img = Image.open(direc + filename)
-        img.show()
-        # display(img)
-        preprocessed_image = transform(img).unsqueeze(0)
-        # preprocessed_image = preprocessed_image.to('cuda')
-        with torch.no_grad():
-            logits = model(preprocessed_image)
-            _, predicted_class_index = torch.max(logits, 1)
-            predicted_label = class_labels[predicted_class_index.item()]
-            outputs = torch.nn.functional.softmax(logits, dim=1)
-
-        print(f"Predicted Label: {predicted_label}")
-        print(f"Predicted Probabilities: {outputs}")
-        print()
-        cnt+=1
+    # model = SimpleCNN()
+    # model.load_state_dict(torch.load('model_test.pth'))
+    # model.eval()
+    #
+    # transform = myTransform().transform
+    # # model = model.to('cuda')
+    #
+    # class_labels = ['Hot', 'Not']  # Replace with your actual class labels
+    #
+    # direc = "NN_data/hot_or_not_oct_23/not/"
+    # cnt = 0
+    # for file in os.listdir(direc):
+    #     if cnt > 4:
+    #         break
+    #     filename = os.fsdecode(file)
+    #     img = Image.open(direc + filename)
+    #     img.show()
+    #     # display(img)
+    #     preprocessed_image = transform(img).unsqueeze(0)
+    #     # preprocessed_image = preprocessed_image.to('cuda')
+    #     with torch.no_grad():
+    #         logits = model(preprocessed_image)
+    #         _, predicted_class_index = torch.max(logits, 1)
+    #         predicted_label = class_labels[predicted_class_index.item()]
+    #         outputs = torch.nn.functional.softmax(logits, dim=1)
+    #
+    #     print(f"Predicted Label: {predicted_label}")
+    #     print(f"Predicted Probabilities: {outputs}")
+    #     print()
+    #     cnt+=1
     print("done")

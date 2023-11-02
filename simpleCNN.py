@@ -38,12 +38,16 @@ class SimpleCNN(nn.Module):
         x = self.fc2(x)
         return x
 
+
 class Trainer():
     def __init__(self):
         self.model = SimpleCNN()
 
     def train_model(self, output_filename, data_directory, batch_size=4, epochs=8):
         # Define your ImageFolder dataset
+        use_cuda = torch.cuda.is_available()
+        device = torch.device("cuda" if use_cuda else "cpu")
+        self.model.to(device=device)
         transform = myTransform().transform
         dataset = ImageFolder(data_directory, transform=transform)
 
@@ -76,6 +80,7 @@ class Trainer():
 
             for batch_idx, data in enumerate(train_loader):
                 inputs, labels = data
+                inputs, labels = inputs.to(device), labels.to(device)  # Move data to the GPU
                 optimizer.zero_grad()  # Zero the parameter gradients
                 outputs = self.model(inputs)  # Forward pass
                 loss = criterion(outputs, labels)  # Calculate the loss
@@ -97,6 +102,8 @@ class Trainer():
 
             with torch.no_grad():
                 for inputs, labels in val_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)  # Move data to the GPU
+
                     outputs = self.model(inputs)  # Forward pass
                     loss = criterion(outputs, labels)  # Calculate the loss
 
