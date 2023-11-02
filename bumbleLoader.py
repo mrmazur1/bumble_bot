@@ -60,6 +60,15 @@ class bumbleLoader:
 
     def start(self, num_swipes=2):
         for i in range(num_swipes):
+            time.sleep(1)
+            self.like = self.driver.find_element(By.XPATH,
+                                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
+            self.dislike = self.driver.find_element(By.XPATH,
+                                                    '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
+            self.down = self.driver.find_element(By.XPATH,
+                                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
+            self.up = self.driver.find_element(By.XPATH,
+                                               '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
             self.close_messages()
             try:
                 photo = WebDriverWait(self.driver, 30).until(
@@ -81,8 +90,8 @@ class bumbleLoader:
 
     def moveFiles(self, source, destination):
         if os.path.exists(destination):
-            os.rmdir(destination)
-            os.makedirs(destination)
+            shutil.rmtree(destination)
+        os.makedirs(destination)
         for file in os.listdir(source):
             source_path = os.path.join(source, file)
             destination_path = os.path.join(destination, file)
@@ -98,8 +107,12 @@ class bumbleLoader:
             pass
         picture_Url = photo.get_attribute('src')
         path, filename = self.imget.getImage(picture_Url)
-        self.driver.find_element(By.XPATH,
-                                 '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
+        try:
+            self.driver.find_element(By.XPATH,
+                                     '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
+        except Exception as e:
+            self.driver.find_element(By.XPATH,
+                                     '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[2]').click()
         return path, filename
 
     def rateImages(self):
@@ -126,8 +139,9 @@ class bumbleLoader:
             except Exception as e:
                 numImages-=1
                 pass
+            time.sleep(1)
             self.down.click()
-        #self.getImage()
+        print(str(liked) + " "+ str(numImages))
         return liked > numImages//2
 
     def predict(self, picture_path, filename=None):
