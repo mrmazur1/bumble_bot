@@ -11,6 +11,8 @@ import torch.nn.functional as F
 import uuid
 import shutil
 
+from torchvision import models
+
 from simpleCNN import SimpleCNN, myTransform
 from downloadImage import imageGetter
 import torch
@@ -24,8 +26,10 @@ class bumbleLoader:
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
         self.driver.get(url)
-        self.model = SimpleCNN()
-        self.model.load_state_dict(torch.load('model_test.pth'))
+        # self.model = SimpleCNN()
+        self.model = models.resnet18()
+        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
+        self.model.load_state_dict(torch.load('model_4_4_20_res18.pth', map_location=torch.device('cpu')))
         self.model.eval()
 
     def load(self):

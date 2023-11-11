@@ -18,7 +18,7 @@ if __name__ == "__main__":
     try:
 
         bl.load()
-        bl.start(num_swipes=4)
+        bl.start(num_swipes=10)
     except Exception as e:
         html = bl.driver.page_source
         bl.driver.save_screenshot("web_page_screenshot.png")
