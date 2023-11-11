@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 from IPython.display import display
 
-from simpleCNN import Trainer, SimpleCNN, myTransform
+from simpleCNN import Trainer, SimpleCNN, myTransform, Resnet_model
 from bumbleLoader import bumbleLoader
 import cookieManager
 from scraper import scrapper
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     # cookieManager.run()
 
 
-    trainer = Trainer()
-    trainer.train_model('model_4.pth', 'NN_data/hot_or_not_oct_23', 4, 2)
+    trainer = Resnet_model()
+    trainer.train('model_4_4_20.pth', 'NN_data/hot_or_not_oct_23', 4, 20)
 
     # model = SimpleCNN()
     # model.load_state_dict(torch.load('model_test.pth'))
