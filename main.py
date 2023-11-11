@@ -20,7 +20,8 @@ if __name__ == "__main__":
 
 
     trainer = Resnet_model()
-    trainer.train('model_4_4_20.pth', 'NN_data/hot_or_not_oct_23', 4, 20)
+    #naming is modelnum/batch size/num epochs/model type
+    trainer.train('model_4_4_10_res152.pth', 'NN_data/hot_or_not_oct_23', 4, 10)
 
     # model = SimpleCNN()
     # model.load_state_dict(torch.load('model_test.pth'))
