@@ -25,8 +25,7 @@ if __name__ == "__main__":
         bl.driver.quit()
         with open("web_page_source.html", "w", encoding="utf-8") as file:
             file.write(html)
-
-        print(e)
+        #print(e)
         traceback.print_exc()
     #cookieManager.run()
     bl.driver.quit()

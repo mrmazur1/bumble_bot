@@ -17,7 +17,7 @@ from simpleCNN import SimpleCNN, myTransform
 from downloadImage import imageGetter
 import torch
 import cookieManager
-
+from selenium import webdriver
 
 class bumbleLoader:
     def __init__(self, url="https://bumble.com"):
@@ -25,7 +25,9 @@ class bumbleLoader:
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
         self.driver.get(url)
-
+        size = self.driver.get_window_size()
+        if size['width'] < 850:
+            self.driver.set_window_size(850, 1000)
         # self.model = SimpleCNN()
         self.model = models.resnet50()
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
@@ -48,7 +50,7 @@ class bumbleLoader:
             print(e.msg)
             self.driver.quit()
         #logged in at this point
-        #time.sleep(5)
+        time.sleep(2)
         self.close_messages()
         #wait for page to load
         try:
@@ -101,50 +103,25 @@ class bumbleLoader:
             destination_path = os.path.join(destination, file)
             shutil.move(source_path, destination_path)
 
-    def getImage(self, element):
-        element.click()
-        try:
-            photo = WebDriverWait(self.driver, 30).until(
-                EC.presence_of_element_located((By.XPATH,
-                                                '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[1]/div/span/img')))
-        finally:
-            pass
-        picture_Url = photo.get_attribute('src')
-        path, filename = self.imget.getImage(picture_Url)
-        try:
-            self.driver.find_element(By.XPATH,
-                                     '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[3]').click()
-        except Exception as e:
-            self.driver.find_element(By.XPATH,
-                                     '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div/div[2]/article/div[2]').click()
+    def getImage(self, url):
+        path, filename = self.imget.getImage(url)
         return path, filename
 
     def rateImages(self):
         numImages, liked = 0, 0
-        end = False
-        extenders = self.driver.find_elements(By.TAG_NAME, 'span')
-        for extender in extenders:
-            if extender.get_attribute('class') != 'icon icon--size-m':
-                 continue
-            while not extender.is_displayed():
-                if 'is-disabled' in self.down.get_attribute('class'):
-                    end = True
-                    break
-                self.down.click()
-                time.sleep(1)
-            time.sleep(1)
-            if end: break
+        pics = self.driver.find_elements(By.TAG_NAME, 'img')
+        for pic in pics:
+            if pic.get_attribute('class') != 'media-box__picture-image':
+                continue
             numImages+=1
             try:
-                img_path, img_name = self.getImage(extender)
+                img_path, img_name = self.getImage(pic.get_attribute('src'))
                 pred = self.predict(img_path, img_name)
                 if pred == 'hot':
                     liked+=1
             except Exception as e:
                 numImages-=1
                 pass
-            time.sleep(1)
-            self.down.click()
         print(str(liked) + " "+ str(numImages))
         return liked > numImages//2
 
