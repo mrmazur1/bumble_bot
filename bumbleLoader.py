@@ -16,7 +16,6 @@ from torchvision import models
 from simpleCNN import SimpleCNN, myTransform
 from downloadImage import imageGetter
 import torch
-from selenium import webdriver
 import cookieManager
 
 
@@ -26,10 +25,11 @@ class bumbleLoader:
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
         self.driver.get(url)
+
         # self.model = SimpleCNN()
-        self.model = models.resnet18()
+        self.model = models.resnet50()
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
-        self.model.load_state_dict(torch.load('model_4_4_20_res18.pth', map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load('model_4_4_10_res50.pth', map_location=torch.device('cpu')))
         self.model.eval()
 
     def load(self):
@@ -172,12 +172,16 @@ class bumbleLoader:
     def close_messages(self):
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:
-            # time.sleep(250/1000)
-            self.driver.switch_to.frame(frame)
-            inner = self.driver.find_elements(By.CSS_SELECTOR, 'button')
-            for inVal in inner:
-                if 'Continue' in inVal.get_attribute('title'):
-                    inVal.click()
-            self.driver.switch_to.parent_frame()
+            try:
+            #time.sleep(250/1000)
+                self.driver.switch_to.frame(frame)
+                inner = self.driver.find_elements(By.CSS_SELECTOR, 'button')
+                for inVal in inner:
+                    if 'Continue' in inVal.get_attribute('title'):
+                        inVal.click()
+                self.driver.switch_to.parent_frame()
+            except Exception as e:
+                print(e)
+                pass
 
 #TODO finish bumbleLoader

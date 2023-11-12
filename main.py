@@ -1,4 +1,5 @@
 import os
+import time
 
 import torch
 from PIL import Image
@@ -7,16 +8,15 @@ from IPython.display import display
 from simpleCNN import Trainer, SimpleCNN, myTransform
 from bumbleLoader import bumbleLoader
 from scraper import scrapper
+import cookieManager
 
 import traceback
 from selenium import webdriver
 
 
-
 if __name__ == "__main__":
     bl = bumbleLoader()
     try:
-
         bl.load()
         bl.start(num_swipes=10)
     except Exception as e:
@@ -29,4 +29,5 @@ if __name__ == "__main__":
         print(e)
         traceback.print_exc()
     #cookieManager.run()
+    bl.driver.quit()
     print("done")
