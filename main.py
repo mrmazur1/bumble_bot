@@ -1,17 +1,6 @@
-import os
-import time
 
-import torch
-from PIL import Image
-from IPython.display import display
-
-from simpleCNN import Trainer, SimpleCNN, myTransform
 from bumbleLoader import bumbleLoader
-from scraper import scrapper
-import cookieManager
-
 import traceback
-from selenium import webdriver
 
 
 if __name__ == "__main__":
@@ -27,6 +16,5 @@ if __name__ == "__main__":
             file.write(html)
         #print(e)
         traceback.print_exc()
-    #cookieManager.run()
     bl.driver.quit()
     print("done")

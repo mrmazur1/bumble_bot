@@ -36,7 +36,7 @@ class bumbleLoader:
 
     def load(self):
         cookieManager.load_cookies(self.driver) #load password stored in cookie
-        self.close_messages()  # close annoying popups
+        self.close_popups()  # close annoying popups
         #login
         try:
             #wait for log in button
@@ -51,7 +51,7 @@ class bumbleLoader:
             self.driver.quit()
         #logged in at this point
         time.sleep(2)
-        self.close_messages()
+        self.close_popups()
         #wait for page to load
         try:
             photo = WebDriverWait(self.driver, 30).until(
@@ -67,15 +67,7 @@ class bumbleLoader:
     def start(self, num_swipes=2):
         for i in range(num_swipes):
             time.sleep(1)
-            self.like = self.driver.find_element(By.XPATH,
-                                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
-            self.dislike = self.driver.find_element(By.XPATH,
-                                                    '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
-            self.down = self.driver.find_element(By.XPATH,
-                                                 '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
-            self.up = self.driver.find_element(By.XPATH,
-                                               '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
-            self.close_messages()
+            self.close_popups()
             try:
                 photo = WebDriverWait(self.driver, 30).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
@@ -87,10 +79,10 @@ class bumbleLoader:
             pred = self.rateImages()
             if pred: #like
                 self.like.click()
-                self.moveFiles(f"tmp/", f"outputs/liked/{str(i)}/")
+                #self.moveFiles(f"tmp/", f"outputs/liked/{str(i)}/")
             else: #dislike
                 self.dislike.click()
-                self.moveFiles(f"tmp/", f"outputs/disliked/{str(i)}/")
+                #self.moveFiles(f"tmp/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
         self.driver.quit()
 
@@ -107,10 +99,11 @@ class bumbleLoader:
         path, filename = self.imget.getImage(url)
         return path, filename
 
-    def rateImages(self):
+    def rateImages(self): #Take images and rate theit attractiveness
         numImages, liked = 0, 0
         pics = self.driver.find_elements(By.TAG_NAME, 'img')
-        for pic in pics:
+        for pic in pics: #go through each profile pic
+            #ignore all the other pics that are not the main focus like cht profile pics/my profile/icons/etc
             if pic.get_attribute('class') != 'media-box__picture-image':
                 continue
             numImages+=1
@@ -120,11 +113,11 @@ class bumbleLoader:
                 if pred == 'hot':
                     liked+=1
             except Exception as e:
-                numImages-=1
                 pass
         print(str(liked) + " "+ str(numImages))
         return liked > numImages//2
 
+    #takes the image and makes a prediction based on the model
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
         input_image = Image.open(picture_path+filename)
@@ -144,13 +137,11 @@ class bumbleLoader:
         print(f"predicted class: {predicted_class}")
         print(f"outputs: {output}\n")
         return predicted_class
-        # os.remove('img.jpg')
 
-    def close_messages(self):
+    def close_popups(self):
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:
             try:
-            #time.sleep(250/1000)
                 self.driver.switch_to.frame(frame)
                 inner = self.driver.find_elements(By.CSS_SELECTOR, 'button')
                 for inVal in inner:
@@ -161,4 +152,7 @@ class bumbleLoader:
                 print(e)
                 pass
 
-#TODO finish bumbleLoader
+
+
+
+
