@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 from PIL import Image
 
@@ -6,8 +8,9 @@ class imageGetter():
         pass
     def getImage(self, url):
         data = requests.get(url).content
-        f = open('img.jpg', 'wb')
+        random_name = uuid.uuid4().hex
+        f = open(f'tmp/{random_name}.jpg', 'wb')
         f.write(data)
         f.close()
-        img = Image.open('img.jpg')
-        return img
+        #img = Image.open(f'{random_name}.jpg')
+        return 'tmp/', f'{random_name}.jpg'
