@@ -150,7 +150,7 @@ class Resnet_model:
 
 
 
-        model = models.resnet152(pretrained=False)
+        model = models.resnet50(pretrained=False)
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda" if use_cuda else "cpu")
         model.to(device)
@@ -178,10 +178,10 @@ class Resnet_model:
                 optimizer.step()
 
                 running_loss += loss.item()
-                #print(f"Epoch [{epoch + 1}/{epochs}] "
-                      # f"Batch [{batch_idx + 1}/{len(train_loader)}] "
-                      # f"epoch Loss: {running_loss / (batch_idx + 1):.4f} "
-                      # f"Total Loss: {running_loss / epochs:.4f}")
+                print(f"Epoch [{epoch + 1}/{epochs}] "
+                      f"Batch [{batch_idx + 1}/{len(train_loader)}] "
+                      f"epoch Loss: {running_loss / (batch_idx + 1):.4f} "
+                      f"Total Loss: {running_loss / epochs:.4f}")
 
             average_train_loss = running_loss / len(train_loader)
             train_losses.append(average_train_loss)
