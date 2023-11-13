@@ -138,6 +138,11 @@ class bumbleLoader:
         return predicted_class
 
     def close_popups(self):
+        try:
+            self.driver.find_element(By.CLASS_NAME, 'page page--encounters')
+            self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/div[1]/div/div[2]/div/div[2]').click()
+        except Exception as e:
+            pass
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:
             try:
