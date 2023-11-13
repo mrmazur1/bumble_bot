@@ -37,13 +37,15 @@ if __name__ == "__main__":
     direc = "NN_data/hot_or_not_oct_23/hot/"
     cnt_hot, cnt_not = 0, 0
     tot = 0
+    hot_img = []
     for file in os.listdir(direc):
-        if tot > 20:
-            break
+        # if tot > 20:
+        #     break
         filename = os.fsdecode(file)
         try:
             if file.endswith('.jpg'):
                 img = Image.open(direc + filename)
+                img = img.convert('RGB')
             else:
                 os.remove(direc+filename)
                 continue
@@ -62,6 +64,7 @@ if __name__ == "__main__":
             cnt_not +=1
         else:
             cnt_hot+=1
+            hot_img.append([filename, outputs])
         print(f"filename: {filename}")
         print(f"class_index: {predicted_class_index.item()}")
         print(f"Predicted Label: {predicted_label}")
@@ -69,3 +72,5 @@ if __name__ == "__main__":
         print()
         tot+=1
     print(f"tot: {tot}\nnot: {cnt_not}\nhot: {cnt_hot}")
+
+    print(hot_img)
