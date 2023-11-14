@@ -78,11 +78,9 @@ def test(name, model):
 
     model.eval()
     bing(model)
-
+    return model
 
 if __name__ == "__main__":
-    # cm = confusion_matrix_me()
-    # cm.run(model, 'NN_data/hot_or_not_oct_23/')
     transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
@@ -95,12 +93,24 @@ if __name__ == "__main__":
     transform = myTransform().transform
     class_labels = ['Hot', 'Not']  # Replace with your actual class label
 
-    n1 = train('res18_32_1', 32, 1, '18')
-    test(n1, '18')
-    n2 = train('res50_32_1', 32, 1, '50')
-    test(n2, '50')
-    n3 = train('res34_32_1', 32, 1, '34')
-    test(n3, '34')
+    # model = test('res50_32_4', '50')
+    # cm = confusion_matrix_me()
+    # cm.run(model, 'NN_data/hot_or_not_oct_23/')
+    cm = confusion_matrix_me()
+
+    n1 = train('res18_32_10_test', 32, 10, '18')
+    m1= test(n1, '18')
+    cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/')
+
+    n2 = train('res50_32_10', 32, 10, '50')
+    m2 = test(n2, '50')
+    cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/')
+
+
+    n3 = train('res34_32_10', 32, 10, '34')
+    m3 = test(n3, '34')
+    cm.run(n3, m3, 'NN_data/hot_or_not_oct_23/')
+
 
 
 

@@ -1,4 +1,6 @@
 import os
+import time
+
 from PIL import Image
 
 from torch import nn
@@ -14,6 +16,8 @@ from torch.autograd import Variable
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib
+from tqdm import tqdm
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -179,8 +183,10 @@ class Resnet_model:
         for epoch in range(epochs):
             model.train()  # Set the model to training mode
             running_loss = 0.0
+            loading_bar(0, len(train_loader), length=50)
+            time.sleep(0.1)
 
-            for batch_idx, (inputs, labels) in enumerate(train_loader):
+            for inputs, labels in tqdm(train_loader, desc=f'Epoch {epoch + 1}/{epochs}', unit='batch', leave=False):
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
@@ -189,10 +195,10 @@ class Resnet_model:
                 optimizer.step()
 
                 running_loss += loss.item()
-                print(f"Epoch [{epoch + 1}/{epochs}] "
-                      f"Batch [{batch_idx + 1}/{len(train_loader)}] "
-                      f"epoch Loss: {running_loss / (batch_idx + 1):.4f} "
-                      f"Total Loss: {running_loss / epochs:.4f}")
+                # print(f"Epoch [{epoch + 1}/{epochs}] "
+                #       f"Batch [{batch_idx + 1}/{len(train_loader)}] "
+                #       f"epoch Loss: {running_loss / (batch_idx + 1):.4f} "
+                #       f"Total Loss: {running_loss / epochs:.4f}")
 
             average_train_loss = running_loss / len(train_loader)
             train_losses.append(average_train_loss)
@@ -210,58 +216,19 @@ class Resnet_model:
             average_val_loss = running_loss / len(val_loader)
             val_losses.append(average_val_loss)
 
+
             print(
                 f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
 
-        class_labels = ['Hot', 'Not']  # Replace with your actual class labels
-
-        # direc = "NN_data/hot_or_not_oct_23/hot/"
-        # cnt_hot, cnt_not = 0, 0
-        # tot = 0
-        # hot_img = []
-        # for file in os.listdir(direc):
-        #     # if tot > 20:
-        #     #     break
-        #     filename = os.fsdecode(file)
-        #     try:
-        #         if file.endswith('.jpg'):
-        #             img = Image.open(direc + filename)
-        #             img = img.convert('RGB')
-        #         else:
-        #             os.remove(direc + filename)
-        #             continue
-        #     except Exception as e:
-        #         os.remove(direc + filename)
-        #         continue
-        #     # img.show()
-        #     preprocessed_image = transform(img).unsqueeze(0).to('cuda')
-        #     with torch.no_grad():
-        #         logits = model(preprocessed_image)
-        #         _, predicted_class_index = torch.max(logits, 1)
-        #         predicted_label = class_labels[predicted_class_index.item()]
-        #         outputs = torch.nn.functional.softmax(logits, dim=1)
-        #
-        #     if predicted_label == 'Not':
-        #         cnt_not += 1
-        #     else:
-        #         cnt_hot += 1
-        #         hot_img.append([filename, outputs])
-        #     # print(f"filename: {filename}")
-        #     # print(f"class_index: {predicted_class_index.item()}")
-        #     # print(f"Predicted Label: {predicted_label}")
-        #     # print(f"Predicted Probabilities: {outputs}")
-        #     # print()
-        #     tot += 1
-        # print(f"tot: {tot}\nnot: {cnt_not}\nhot: {cnt_hot}")
+        #class_labels = ['Hot', 'Not']  # Replace with your actual class labels
 
         torch.save(model.state_dict(), output_filename)
-
 
 class confusion_matrix_me():
     def __init__(self):
         pass
 
-    def run(self, model, data_directory,batch_size=32):
+    def run(self,name, model, data_directory,batch_size=32):
         # Assuming your model is named 'model' and your test loader is 'test_loader'
         device = torch.device("cuda")
         model.to(device)
@@ -305,7 +272,6 @@ class confusion_matrix_me():
         plt.xlabel('Predicted')
         plt.ylabel('True')
         plt.title('Confusion Matrix')
-        plt.savefig("figure")
-        plt.show()
+        plt.savefig("figure_"+name)
 
 
