@@ -1,8 +1,3 @@
-import os
-import time
-
-from PIL import Image
-
 from torch import nn
 import torch.nn.functional as F
 
@@ -21,6 +16,12 @@ from tqdm import tqdm
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+import sys
+
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore", UserWarning)
 
 
 class myTransform():
@@ -183,10 +184,11 @@ class Resnet_model:
         for epoch in range(epochs):
             model.train()  # Set the model to training mode
             running_loss = 0.0
-            loading_bar(0, len(train_loader), length=50)
-            time.sleep(0.1)
 
-            for inputs, labels in tqdm(train_loader, desc=f'Epoch {epoch + 1}/{epochs}', unit='batch', leave=False):
+            # Use tqdm for the loading bar
+            progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}',
+                                unit='batch', leave=False)
+            for batch_idx, (inputs, labels) in progress_bar:
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
@@ -195,10 +197,6 @@ class Resnet_model:
                 optimizer.step()
 
                 running_loss += loss.item()
-                # print(f"Epoch [{epoch + 1}/{epochs}] "
-                #       f"Batch [{batch_idx + 1}/{len(train_loader)}] "
-                #       f"epoch Loss: {running_loss / (batch_idx + 1):.4f} "
-                #       f"Total Loss: {running_loss / epochs:.4f}")
 
             average_train_loss = running_loss / len(train_loader)
             train_losses.append(average_train_loss)
@@ -217,8 +215,8 @@ class Resnet_model:
             val_losses.append(average_val_loss)
 
 
-            print(
-                f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
+            # print(
+            #     f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
 
         #class_labels = ['Hot', 'Not']  # Replace with your actual class labels
 
