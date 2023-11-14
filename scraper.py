@@ -27,14 +27,13 @@ class scrapper:
             count = 0
             urls = set()
             end = time.time()+60
-            while count < nu:
+            while count < nums:
                 #curr =
                 try:
                     # if curr > end:
                     #     break
                     url = img.get_attribute('src')
-                    if img.get_attribute('src') is not None and img.size['height'] > 192 and img.size[
-                        'width'] > 192 and url not in urls:
+                    if img.get_attribute('src') is not None and img.size['height'] > 192 and img.size['width'] > 192 and url not in urls:
                         data = requests.get(url).content
                         unique_filename = str(uuid.uuid4())
                         full_path = os.path.join(direc, unique_filename)
