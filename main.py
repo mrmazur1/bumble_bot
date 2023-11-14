@@ -5,7 +5,7 @@ from PIL import Image
 from IPython.display import display
 from torchvision import models, transforms
 
-from simpleCNN import Trainer, SimpleCNN, myTransform, Resnet_model
+from simpleCNN import Trainer, SimpleCNN, myTransform, Resnet_model, confusion_matrix_me
 from bumbleLoader import bumbleLoader
 import cookieManager
 from scraper import scrapper
@@ -13,13 +13,15 @@ from scraper import scrapper
 
 if __name__ == "__main__":
 
-    trainer = Resnet_model()
-    #naming is modelnum/batch size/num epochs/model type
-    trainer.train('tester_32_3_res50.pth', 'NN_data/hot_or_not_oct_23', 32, 3)
+    # trainer = Resnet_model()
+    # #naming is modelnum/batch size/num epochs/model type
+    # trainer.train('tester_32_3_res50.pth', 'NN_data/hot_or_not_oct_23', 32, 3)
 
-    # model = models.resnet50()
-    # model.fc = torch.nn.Linear(model.fc.in_features, 2)
-    # model.load_state_dict(torch.load('tester_32_3_res50.pth', map_location=torch.device('cuda')))
+    model = models.resnet50()
+    model.fc = torch.nn.Linear(model.fc.in_features, 2)
+    model.load_state_dict(torch.load('tester_32_3_res50.pth', map_location=torch.device('cuda')))
+    cm = confusion_matrix_me()
+    cm.run(model, 'NN_data/hot_or_not_oct_23/')
     # model.eval()
     #
     # transform = transforms.Compose([

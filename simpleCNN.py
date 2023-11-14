@@ -7,6 +7,16 @@ from torchvision import transforms, datasets, models
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import ImageFolder
 
+import torch
+from torch.autograd import Variable
+from sklearn.metrics import confusion_matrix
+import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
 
 class myTransform():
     def __init__(self):
@@ -23,6 +33,7 @@ class myTransform():
         ret = self.transform(image)
         return ret
 
+
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
@@ -30,7 +41,6 @@ class SimpleCNN(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.fc1 = nn.Linear(16 * 96 * 96, 512)  # Adjust input size based on your image size
         self.fc2 = nn.Linear(512, 2)  # Adjust output size based on your task
-
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -150,8 +160,6 @@ class Resnet_model:
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-
-
         model = models.resnet18(pretrained=False)
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda" if use_cuda else "cpu")
@@ -206,5 +214,54 @@ class Resnet_model:
 
         torch.save(model.state_dict(), output_filename)
 
+
+class confusion_matrix_me():
+    def __init__(self):
+        pass
+
+    def run(self, model, data_directory,batch_size=32):
+        # Assuming your model is named 'model' and your test loader is 'test_loader'
+        model.eval()
+        all_labels = []
+        all_predictions = []
+
+        transform = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        validation_split = .75
+        dataset = ImageFolder(data_directory, transform=transform)
+        num_data = len(dataset)
+        num_validation = int(validation_split * num_data)
+        num_training = num_data - num_validation
+
+        # Use random_split to split the dataset
+        train_dataset, val_dataset = random_split(dataset, [num_training, num_validation])
+        test_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+        class_labels= ['hot', 'not']
+
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                all_labels.extend(labels.numpy())
+                all_predictions.extend(predicted.numpy())
+
+        cm = confusion_matrix(y_true=all_labels, y_pred=all_predictions, labels=[1, 0])
+
+        print("total files checked: "+ str(len(train_dataset)))
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_labels, yticklabels=class_labels)
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.title('Confusion Matrix')
+        plt.savefig("figure")
+        plt.show()
 
 
