@@ -221,6 +221,8 @@ class confusion_matrix_me():
 
     def run(self, model, data_directory,batch_size=32):
         # Assuming your model is named 'model' and your test loader is 'test_loader'
+        device = torch.device("cuda")
+        model.to(device)
         model.eval()
         all_labels = []
         all_predictions = []
@@ -234,7 +236,7 @@ class confusion_matrix_me():
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-        validation_split = .75
+        validation_split = 0
         dataset = ImageFolder(data_directory, transform=transform)
         num_data = len(dataset)
         num_validation = int(validation_split * num_data)
@@ -243,15 +245,15 @@ class confusion_matrix_me():
         # Use random_split to split the dataset
         train_dataset, val_dataset = random_split(dataset, [num_training, num_validation])
         test_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
         class_labels= ['hot', 'not']
 
         with torch.no_grad():
             for inputs, labels in test_loader:
+                inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 _, predicted = torch.max(outputs, 1)
-                all_labels.extend(labels.numpy())
-                all_predictions.extend(predicted.numpy())
+                all_labels.extend(labels.cpu().numpy())
+                all_predictions.extend(predicted.cpu().numpy())
 
         cm = confusion_matrix(y_true=all_labels, y_pred=all_predictions, labels=[1, 0])
 
