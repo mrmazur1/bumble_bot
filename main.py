@@ -7,34 +7,24 @@ from torchvision import models, transforms
 
 from simpleCNN import Trainer, SimpleCNN, myTransform, Resnet_model, confusion_matrix_me
 
+def get_resnet_model(model_type='resnet18'):
+    available_models = {
+        '18': models.resnet18(),
+        '34': models.resnet34(),
+        '50': models.resnet50(),
+        '101': models.resnet101(),
+        '152': models.resnet152(),
+    }
+    # Check if the specified model_type is in the available_models dictionary
+    if model_type in available_models:
+        # Instantiate the selected model and return it
+        return available_models[model_type]
+    else:
+        # If the specified model_type is not found, raise an exception or return a default model
+        raise ValueError(f"Invalid model type: {model_type}")
 
-
-if __name__ == "__main__":
-    # trainer = Resnet_model()
-    # #naming is modelnum/batch size/num epochs/model type
-    # trainer.train('tester_32_3_res50.pth', 'NN_data/hot_or_not_oct_23', 32, 3)
-
-    model = models.resnet50()
-    model.fc = torch.nn.Linear(model.fc.in_features, 2)
-    model.load_state_dict(torch.load('tester_32_3_res50.pth', map_location=torch.device('cuda')))
-    model.to('cuda')
-    # cm = confusion_matrix_me()
-    # cm.run(model, 'NN_data/hot_or_not_oct_23/')
-    model.eval()
-
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    transform = myTransform().transform
-    # model = model.to('cuda')
-
-    class_labels = ['Hot', 'Not']  # Replace with your actual class labels
-
-    direc = "NN_data/hot_or_not_oct_23/not/"
+def bing(model):
+    direc = "NN_data/hot_or_not_oct_23/hot/"
     cnt_hot, cnt_not = 0, 0
     tot = 0
     hot_img = []
@@ -47,12 +37,12 @@ if __name__ == "__main__":
                 img = Image.open(direc + filename)
                 img = img.convert('RGB')
             else:
-                os.remove(direc+filename)
+                os.remove(direc + filename)
                 continue
         except Exception as e:
-            os.remove(direc+filename)
+            os.remove(direc + filename)
             continue
-        #img.show()
+        # img.show()
         preprocessed_image = transform(img).unsqueeze(0).to('cuda')
         with torch.no_grad():
             logits = model(preprocessed_image)
@@ -61,16 +51,59 @@ if __name__ == "__main__":
             outputs = torch.nn.functional.softmax(logits, dim=1)
 
         if predicted_label == 'Not':
-            cnt_not +=1
+            cnt_not += 1
         else:
-            cnt_hot+=1
+            cnt_hot += 1
             hot_img.append([filename, outputs])
-        print(f"filename: {filename}")
-        print(f"class_index: {predicted_class_index.item()}")
-        print(f"Predicted Label: {predicted_label}")
-        print(f"Predicted Probabilities: {outputs}")
-        print()
-        tot+=1
-    print(f"tot: {tot}\nnot: {cnt_not}\nhot: {cnt_hot}")
+        # print(f"filename: {filename}")
+        # print(f"class_index: {predicted_class_index.item()}")
+        # print(f"Predicted Label: {predicted_label}")
+        # print(f"Predicted Probabilities: {outputs}")
+        # print()
+        tot += 1
+    print(f"tot: {tot}\nnot: {cnt_not}\nhot: {cnt_hot}\n")
+
+def train(name, batch, pocs, model):
+    print(f"name: {name}")
+    model = get_resnet_model(model)
+    trainer = Resnet_model()
+    trainer.train(name, 'NN_data/hot_or_not_oct_23', batch, pocs, model)
+    return name
+
+def test(name, model):
+    model = get_resnet_model(model)
+    model.fc = torch.nn.Linear(model.fc.in_features, 2)
+    model.load_state_dict(torch.load(name, map_location=torch.device('cuda')))
+    model.to('cuda')
+
+    model.eval()
+    bing(model)
+
+
+if __name__ == "__main__":
+    # cm = confusion_matrix_me()
+    # cm.run(model, 'NN_data/hot_or_not_oct_23/')
+    transform = transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    transform = myTransform().transform
+    class_labels = ['Hot', 'Not']  # Replace with your actual class label
+
+    n1 = train('res18_32_1', 32, 1, '18')
+    test(n1, '18')
+    n2 = train('res50_32_1', 32, 1, '50')
+    test(n2, '50')
+    n3 = train('res34_32_1', 32, 1, '34')
+    test(n3, '34')
+
+
+
+
 
 

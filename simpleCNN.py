@@ -1,7 +1,9 @@
+import os
+from PIL import Image
+
 from torch import nn
 import torch.nn.functional as F
-from torchvision import transforms
-import torch
+
 import torch.optim as optim
 from torchvision import transforms, datasets, models
 from torch.utils.data import DataLoader, random_split
@@ -134,7 +136,7 @@ class Resnet_model:
     def __init__(self):
         pass
 
-    def train(self, output_filename, data_directory, batch_size=16, epochs=8):
+    def train(self, output_filename, data_directory, batch_size=16, epochs=8,  model=models.resnet18(pretrained=False)):
         transform = transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
@@ -159,7 +161,7 @@ class Resnet_model:
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-        model = models.resnet18(pretrained=False)
+        #model = models.resnet18(pretrained=False)
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda" if use_cuda else "cpu")
         model.to(device)
@@ -168,7 +170,7 @@ class Resnet_model:
         model.to(device)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.adam(model.parameters(), lr=0.0005, momentum=0.9)
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
 
         # Training loop
         train_losses = []
@@ -210,6 +212,47 @@ class Resnet_model:
 
             print(
                 f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
+
+        class_labels = ['Hot', 'Not']  # Replace with your actual class labels
+
+        # direc = "NN_data/hot_or_not_oct_23/hot/"
+        # cnt_hot, cnt_not = 0, 0
+        # tot = 0
+        # hot_img = []
+        # for file in os.listdir(direc):
+        #     # if tot > 20:
+        #     #     break
+        #     filename = os.fsdecode(file)
+        #     try:
+        #         if file.endswith('.jpg'):
+        #             img = Image.open(direc + filename)
+        #             img = img.convert('RGB')
+        #         else:
+        #             os.remove(direc + filename)
+        #             continue
+        #     except Exception as e:
+        #         os.remove(direc + filename)
+        #         continue
+        #     # img.show()
+        #     preprocessed_image = transform(img).unsqueeze(0).to('cuda')
+        #     with torch.no_grad():
+        #         logits = model(preprocessed_image)
+        #         _, predicted_class_index = torch.max(logits, 1)
+        #         predicted_label = class_labels[predicted_class_index.item()]
+        #         outputs = torch.nn.functional.softmax(logits, dim=1)
+        #
+        #     if predicted_label == 'Not':
+        #         cnt_not += 1
+        #     else:
+        #         cnt_hot += 1
+        #         hot_img.append([filename, outputs])
+        #     # print(f"filename: {filename}")
+        #     # print(f"class_index: {predicted_class_index.item()}")
+        #     # print(f"Predicted Label: {predicted_label}")
+        #     # print(f"Predicted Probabilities: {outputs}")
+        #     # print()
+        #     tot += 1
+        # print(f"tot: {tot}\nnot: {cnt_not}\nhot: {cnt_hot}")
 
         torch.save(model.state_dict(), output_filename)
 
