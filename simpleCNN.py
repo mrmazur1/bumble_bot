@@ -136,6 +136,49 @@ class Trainer():
         torch.save(self.model.state_dict(), output_filename)
 
 
+class EarlyStopping:
+    def __init__(self, patience=5, delta=0, checkpoint_path='best_checkpoint.pt'):
+        self.patience = patience
+        self.delta = delta
+        self.checkpoint_path = checkpoint_path
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.best_checkpoint = None
+
+    def __call__(self, val_loss, model, optimizer, epoch):
+        score = -val_loss
+
+        if self.best_score is None or score > self.best_score + self.delta:
+            self.best_score = score
+            self.save_checkpoint(val_loss, model, optimizer, epoch)
+            self.counter = 0
+        else:
+            self.counter += 1
+            self.load_best_checkpoint(model, optimizer)
+            if self.counter >= self.patience:
+                self.early_stop = True
+        return model
+
+    def save_checkpoint(self, val_loss, model, optimizer, epoch):
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'val_loss': val_loss,
+        }
+        torch.save(checkpoint, self.checkpoint_path)
+        print(f'Model checkpoint saved with validation loss: {val_loss}')
+        self.best_checkpoint = self.checkpoint_path
+
+    def load_best_checkpoint(self, model, optimizer):
+        if self.best_checkpoint is not None:
+            checkpoint = torch.load(self.best_checkpoint)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print(f'Resumed training from epoch {checkpoint["epoch"]}')
+
+
 class Resnet_model:
     def __init__(self):
         pass
@@ -175,6 +218,7 @@ class Resnet_model:
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.001)
+        early_stopping = EarlyStopping(patience=5, delta=0.001, checkpoint_path=output_filename)
 
         # Training loop
         train_losses = []
@@ -212,13 +256,11 @@ class Resnet_model:
 
             average_val_loss = running_loss / len(val_loader)
             val_losses.append(average_val_loss)
-
-
-            # print(
-            #     f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
-
-        #class_labels = ['Hot', 'Not']  # Replace with your actual class labels
-
+            early_stopping(average_val_loss, model, optimizer, epoch)
+            # Check if early stopping criteria are met
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
         torch.save(model.state_dict(), output_filename)
 
 class confusion_matrix_me():

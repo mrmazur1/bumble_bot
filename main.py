@@ -96,20 +96,33 @@ if __name__ == "__main__":
     # model = test('res50_32_4', '50')
     # cm = confusion_matrix_me()
     # cm.run(model, 'NN_data/hot_or_not_oct_23/')
+
     cm = confusion_matrix_me()
 
-    n1 = train('res18_32_10_test', 32, 10, '18')
-    m1= test(n1, '18')
+    n1 = train('res50_64_20_early', 64, 20, '50')
+    m1= test(n1, '50')
     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/')
-
-    n2 = train('res50_32_10', 32, 10, '50')
+    #
+    n2 = train('res50_32_20_early', 32, 20, '50')
     m2 = test(n2, '50')
     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/')
-
-
-    n3 = train('res34_32_10', 32, 10, '34')
-    m3 = test(n3, '34')
-    cm.run(n3, m3, 'NN_data/hot_or_not_oct_23/')
+    #
+    #
+    # n3 = train('res50_64_30', 64, 30, '50')
+    # m3 = test(n3, '50')
+    # cm.run(n3, m3, 'NN_data/hot_or_not_oct_23/')
+    #
+    # n4 = train('res50_32_30', 32, 30, '50')
+    # m4 = test(n4, '50')
+    #cm.run(n4, m4, 'NN_data/hot_or_not_oct_23/')
+    #
+    # n4 = train('res101_32_10', 32, 10, '101')
+    # m4 = test(n4, '101')
+    # cm.run(n4, m4, 'NN_data/hot_or_not_oct_23/')
+    #
+    # n5 = train('res101_64_10', 64, 10, '101')
+    # m5 = test(n5, '101')
+    # cm.run(n5, m5, 'NN_data/hot_or_not_oct_23/')
 
 
 
