@@ -17,6 +17,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 import sys
 
 if not sys.warnoptions:
@@ -95,19 +96,17 @@ class Trainer():
             self.model.train()  # Set the model to training mode
             running_loss = 0.0
 
-            for batch_idx, data in enumerate(train_loader):
-                inputs, labels = data
-                inputs, labels = inputs.to(device), labels.to(device)  # Move data to the GPU
-                optimizer.zero_grad()  # Zero the parameter gradients
-                outputs = self.model(inputs)  # Forward pass
-                loss = criterion(outputs, labels)  # Calculate the loss
-                loss.backward()  # Backpropagation
-                optimizer.step()  # Update weights
+            progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}',
+                                unit='batch', leave=False)
+            for batch_idx, (inputs, labels) in progress_bar:
+                inputs, labels = inputs.to(device), labels.to(device)
+                optimizer.zero_grad()
+                outputs = self.model(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
 
                 running_loss += loss.item()
-                print(f"Epoch [{epoch + 1}/{epochs}] "
-                      f"Batch [{batch_idx + 1}/{len(train_loader)}] "
-                      f"Loss: {running_loss / 10:.4f}")
 
             # Calculate and store the average training loss for the epoch
             average_train_loss = running_loss / len(train_loader)
