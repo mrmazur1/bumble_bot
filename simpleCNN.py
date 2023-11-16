@@ -2,6 +2,7 @@ from torch import nn
 import torch.nn.functional as F
 
 import torch.optim as optim
+from torch.optim import lr_scheduler
 from torchvision import transforms, datasets, models
 from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import ImageFolder
@@ -9,7 +10,6 @@ from torchvision.datasets import ImageFolder
 import torch
 from torch.autograd import Variable
 from sklearn.metrics import confusion_matrix
-import numpy as np
 import matplotlib
 from tqdm import tqdm
 
@@ -146,19 +146,18 @@ class EarlyStopping:
         self.early_stop = False
         self.best_checkpoint = None
 
-    def __call__(self, val_loss, model, optimizer, epoch):
+    def __call__(self, val_loss, model, optimizer, epoch, bias):
         score = -val_loss
-
+        bias = 0
         if self.best_score is None or score > self.best_score + self.delta:
             self.best_score = score
             self.save_checkpoint(val_loss, model, optimizer, epoch)
             self.counter = 0
         else:
             self.counter += 1
-            self.load_best_checkpoint(model, optimizer)
+            self.load_best_checkpoint(model, optimizer, bias)
             if self.counter >= self.patience:
                 self.early_stop = True
-        return model
 
     def save_checkpoint(self, val_loss, model, optimizer, epoch):
         checkpoint = {
@@ -171,19 +170,40 @@ class EarlyStopping:
         print(f'Model checkpoint saved with validation loss: {val_loss}')
         self.best_checkpoint = self.checkpoint_path
 
-    def load_best_checkpoint(self, model, optimizer):
+    def load_best_checkpoint(self, model, optimizer, bias):
         if self.best_checkpoint is not None:
             checkpoint = torch.load(self.best_checkpoint)
             model.load_state_dict(checkpoint['model_state_dict'])
+
+            # Update random_bias from the loaded checkpoint
+            bias = nn.Parameter(torch.randn(1))
+
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            print(f'Resumed training from epoch {checkpoint["epoch"]}')
+            print(f'Resumed training from epoch {checkpoint["epoch"]} with the loaded random_bias')
 
 
-class Resnet_model:
-    def __init__(self):
-        pass
+class Resnet_model(nn.Module):
+    def __init__(self, data_directory, type=models.resnet18(pretrained=False)):
+        super(Resnet_model, self).__init__()
+        self.model = type
+        use_cuda = torch.cuda.is_available()
+        self.device = torch.device("cuda" if use_cuda else "cpu")
+        self.model.to(self.device)
+        num_ftrs = self.model.fc.in_features
+        self.model.fc = nn.Linear(num_ftrs, 2)
+        self.model.to(self.device)
 
-    def train(self, output_filename, data_directory, batch_size=16, epochs=8,  model=models.resnet18(pretrained=False)):
+        # Create random_bias as a learnable parameter
+        self.random_bias = nn.Parameter(torch.randn(1))
+
+        self.data_directory = data_directory
+
+    def forward(self, x):
+        resnet50_output = self.resnet50(x)
+        # out_bias = resnet50_output+self.random_bias
+        return resnet50_output
+
+    def train(self, output_filename, batch_size=16, epochs=8, lr = 0.001):
         transform = transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
@@ -193,7 +213,7 @@ class Resnet_model:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-        dataset = datasets.ImageFolder(root=data_directory, transform=transform)
+        dataset = datasets.ImageFolder(root=self.data_directory, transform=transform)
 
         # Specify the percentage for the validation set
         validation_split = 0.2  # 20% of the data for validation
@@ -209,32 +229,27 @@ class Resnet_model:
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
         #model = models.resnet18(pretrained=False)
-        use_cuda = torch.cuda.is_available()
-        device = torch.device("cuda" if use_cuda else "cpu")
-        model.to(device)
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, 2)  # Assuming num_classes is the number of classes in your dataset
-        model.to(device)
+
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
-        early_stopping = EarlyStopping(patience=5, delta=0.001, checkpoint_path=output_filename)
+        optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9)
+        early_stopping = EarlyStopping(patience=25, delta=0.1, checkpoint_path=output_filename)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
         # Training loop
         train_losses = []
         val_losses = []
 
         for epoch in range(epochs):
-            model.train()  # Set the model to training mode
+            self.model.train()  # Set the model to training mode
             running_loss = 0.0
 
             # Use tqdm for the loading bar
-            progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}',
-                                unit='batch', leave=False)
+            progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}', unit='batch', leave=False)
             for batch_idx, (inputs, labels) in progress_bar:
-                inputs, labels = inputs.to(device), labels.to(device)
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 optimizer.zero_grad()
-                outputs = model(inputs)
+                outputs = self.model(inputs)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
@@ -243,25 +258,26 @@ class Resnet_model:
 
             average_train_loss = running_loss / len(train_loader)
             train_losses.append(average_train_loss)
-
-            model.eval()  # Set the model to evaluation mode
+            scheduler.step()
+            self.model.eval()  # Set the model to evaluation mode
             running_loss = 0.0
 
             with torch.no_grad():
                 for inputs, labels in val_loader:
-                    inputs, labels = inputs.to(device), labels.to(device)
-                    outputs = model(inputs)
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    outputs = self.model(inputs)
                     loss = criterion(outputs, labels)
                     running_loss += loss.item()
 
             average_val_loss = running_loss / len(val_loader)
             val_losses.append(average_val_loss)
-            early_stopping(average_val_loss, model, optimizer, epoch)
-            # Check if early stopping criteria are met
+            early_stopping(average_val_loss, self.model, optimizer, epoch, self.random_bias)
+
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
-        torch.save(model.state_dict(), output_filename)
+        torch.save(self.model.state_dict(), output_filename)
+        return output_filename
 
 class confusion_matrix_me():
     def __init__(self):
