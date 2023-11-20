@@ -9,6 +9,7 @@ from torchvision.datasets import ImageFolder
 
 import torch
 from torch.autograd import Variable
+import numpy as np
 from sklearn.metrics import confusion_matrix
 import matplotlib
 from tqdm import tqdm
@@ -155,7 +156,7 @@ class EarlyStopping:
             self.counter = 0
         else:
             self.counter += 1
-            self.load_best_checkpoint(model, optimizer, bias)
+            #self.load_best_checkpoint(model, optimizer, bias)
             if self.counter >= self.patience:
                 self.early_stop = True
 
@@ -228,13 +229,10 @@ class Resnet_model(nn.Module):
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-        #model = models.resnet18(pretrained=False)
-
-
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9)
-        early_stopping = EarlyStopping(patience=25, delta=0.1, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+        optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        early_stopping = EarlyStopping(patience=25, delta=0.0001, checkpoint_path=output_filename)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
         # Training loop
         train_losses = []
@@ -273,9 +271,25 @@ class Resnet_model(nn.Module):
             val_losses.append(average_val_loss)
             early_stopping(average_val_loss, self.model, optimizer, epoch, self.random_bias)
 
+            # print(f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}", end=" | ")
+
             if early_stopping.early_stop:
                 print("Early stopping")
+                epochs = len(val_losses)
                 break
+
+        plt.figure(1)
+        plt.rcParams["figure.figsize"] = [7.50, 3.50]
+        plt.rcParams["figure.autolayout"] = True
+        valid = np.array(val_losses)
+        train = np.array(train_losses)
+        x = [i+1 for i in range(epochs)]
+        plt.title("train and val losses over epochs")
+        plt.plot(x, valid, color='blue') #valid loss
+        plt.plot(x, train, color="red")
+        plt.savefig(f"{output_filename}_losses")
+        plt.close()
+
         torch.save(self.model.state_dict(), output_filename)
         return output_filename
 
@@ -322,11 +336,12 @@ class confusion_matrix_me():
         cm = confusion_matrix(y_true=all_labels, y_pred=all_predictions, labels=[1, 0])
 
         print("total files checked: "+ str(len(train_dataset)))
-        plt.figure(figsize=(10, 8))
+        plt.figure(2, figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_labels, yticklabels=class_labels)
         plt.xlabel('Predicted')
         plt.ylabel('True')
         plt.title('Confusion Matrix')
         plt.savefig("figure_"+name)
+        plt.close()
 
 
