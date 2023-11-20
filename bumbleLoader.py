@@ -35,7 +35,7 @@ def get_resnet_model(model_type='resnet18'):
         raise ValueError(f"Invalid model type: {model_type}")
 
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com", model='18'):
+    def __init__(self, url="https://bumble.com", modelType='18', modelPath='res101_32_50'):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -44,10 +44,11 @@ class bumbleLoader:
         if size['width'] < 850:
             self.driver.set_window_size(850, 1000)
         # self.model = SimpleCNN()
-        self.model = get_resnet_model(model)
+        self.model = get_resnet_model(modelType)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
-        self.model.load_state_dict(torch.load('res101_32_50', map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
+        self.tracker = 0
 
     def load(self):
         cookieManager.load_cookies(self.driver) #load password stored in cookie
@@ -79,13 +80,20 @@ class bumbleLoader:
         self.up = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
         self.imget = imageGetter()
 
-    def start(self, num_swipes=2):
+    def start(self, tracker, num_swipes=2):
+        shutil.rmtree('outputs')
+        os.mkdir('outputs/')
+        shutil.rmtree('tmp')
+        os.mkdir('tmp/')
+        self.tracker=tracker
         for i in range(num_swipes):
+            self.tracker+=1
+            if self.tracker > num_swipes: return
             self.idx = i
             time.sleep(1)
             self.close_popups()
             try:
-                photo = WebDriverWait(self.driver, 30).until(
+                photo = WebDriverWait(self.driver, 10).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
             finally:
                 pass
@@ -100,7 +108,8 @@ class bumbleLoader:
                 self.dislike.click()
                 self.moveFiles(f"tmp/{self.idx}/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
-        self.driver.quit()
+        #self.driver.quit()
+        return
 
     def moveFiles(self, source, destination):
         if os.path.exists(destination):
@@ -129,7 +138,7 @@ class bumbleLoader:
                 if pred_hot > pred_not:
                     liked+=1
             except Exception as e:
-                print(e.with_traceback())
+                print(e)
                 pass
         print(str(liked) + " "+ str(numImages))
         return liked > numImages//2
