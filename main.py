@@ -1,10 +1,9 @@
-
 from bumbleLoader import bumbleLoader
 import traceback
 
 
 if __name__ == "__main__":
-    bl = bumbleLoader()
+    bl = bumbleLoader(model='18')
     try:
         bl.load()
         bl.start(num_swipes=10)
