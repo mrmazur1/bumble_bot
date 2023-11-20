@@ -124,7 +124,7 @@ if __name__ == "__main__":
     test(d4, '34', 'hot')
     test(d4, '34', 'not')
     test(d5, '18', 'hot')
-    test(d5, '18', 'not')l
+    test(d5, '18', 'not')
     test(d6, '18', 'hot')
     test(d6, '18', 'not')
     #
