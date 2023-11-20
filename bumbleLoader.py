@@ -35,7 +35,7 @@ def get_resnet_model(model_type='resnet18'):
         raise ValueError(f"Invalid model type: {model_type}")
 
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com", modelType='18', modelPath='res101_32_50'):
+    def __init__(self, url="https://bumble.com", modelType='18', modelPath = 'res18_32_50'):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
