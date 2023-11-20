@@ -4,10 +4,10 @@ import traceback
 
 
 if __name__ == "__main__":
-    bl = bumbleLoader()
+    bl = bumbleLoader(model='101')
     try:
         bl.load()
-        bl.start(num_swipes=10)
+        bl.start(num_swipes=1)
     except Exception as e:
         html = bl.driver.page_source
         bl.driver.save_screenshot("web_page_screenshot.png")

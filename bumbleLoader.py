@@ -18,8 +18,24 @@ import torch
 import cookieManager
 from selenium import webdriver
 
+def get_resnet_model(model_type='resnet18'):
+    available_models = {
+        '18': models.resnet18(),
+        '34': models.resnet34(),
+        '50': models.resnet50(),
+        '101': models.resnet101(),
+        '152': models.resnet152(),
+    }
+    # Check if the specified model_type is in the available_models dictionary
+    if model_type in available_models:
+        # Instantiate the selected model and return it
+        return available_models[model_type]
+    else:
+        # If the specified model_type is not found, raise an exception or return a default model
+        raise ValueError(f"Invalid model type: {model_type}")
+
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com"):
+    def __init__(self, url="https://bumble.com", model='18'):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -28,9 +44,9 @@ class bumbleLoader:
         if size['width'] < 850:
             self.driver.set_window_size(850, 1000)
         # self.model = SimpleCNN()
-        self.model = models.resnet50()
+        self.model = get_resnet_model(model)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
-        self.model.load_state_dict(torch.load('model_4_4_10_res50.pth', map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load('res101_32_50', map_location=torch.device('cpu')))
         self.model.eval()
 
     def load(self):
@@ -65,6 +81,7 @@ class bumbleLoader:
 
     def start(self, num_swipes=2):
         for i in range(num_swipes):
+            self.idx = i
             time.sleep(1)
             self.close_popups()
             try:
@@ -78,10 +95,10 @@ class bumbleLoader:
             pred = self.rateImages()
             if pred: #like
                 self.like.click()
-                #self.moveFiles(f"tmp/", f"outputs/liked/{str(i)}/")
+                self.moveFiles(f"tmp/{self.idx}/", f"outputs/liked/{str(i)}/")
             else: #dislike
                 self.dislike.click()
-                #self.moveFiles(f"tmp/", f"outputs/disliked/{str(i)}/")
+                self.moveFiles(f"tmp/{self.idx}/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
         self.driver.quit()
 
@@ -92,10 +109,10 @@ class bumbleLoader:
         for file in os.listdir(source):
             source_path = os.path.join(source, file)
             destination_path = os.path.join(destination, file)
-            shutil.move(source_path, destination_path)
+            shutil.copy(source_path, destination_path)
 
     def getImage(self, url):
-        path, filename = self.imget.getImage(url)
+        path, filename = self.imget.getImage(url, self.idx)
         return path, filename
 
     def rateImages(self): #Take images and rate theit attractiveness
@@ -108,10 +125,11 @@ class bumbleLoader:
             numImages+=1
             try:
                 img_path, img_name = self.getImage(pic.get_attribute('src'))
-                pred = self.predict(img_path, img_name)
-                if pred == 'hot':
+                pred_hot, pred_not = self.predict(img_path, img_name)
+                if pred_hot > pred_not:
                     liked+=1
             except Exception as e:
+                print(e.with_traceback())
                 pass
         print(str(liked) + " "+ str(numImages))
         return liked > numImages//2
@@ -135,7 +153,8 @@ class bumbleLoader:
         print(f"filename: {filename}")
         print(f"predicted class: {predicted_class}")
         print(f"outputs: {output}\n")
-        return predicted_class
+        val = output.cpu().numpy()
+        return val[0,0], val[0,1]
 
     def close_popups(self):
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
