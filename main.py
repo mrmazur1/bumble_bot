@@ -1,12 +1,17 @@
 from bumbleLoader import bumbleLoader
 import traceback
+import time
 
 
 if __name__ == "__main__":
-    count = 10
+    count = 30
     exit_flag = False
-    bl = bumbleLoader(modelType='101', modelPath='res101_64_50')
+    bl = bumbleLoader(modelType='101', modelPath='res_101_32_200')
+    start = time.monotonic()
     while bl.tracker < count:
+        curr = time.monotonic()
+        if curr > start+3600: #1 hour max
+            break
         try:
             bl.load()
             bl.start(0, num_swipes=count)
