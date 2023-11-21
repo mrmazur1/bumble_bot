@@ -231,8 +231,8 @@ class Resnet_model(nn.Module):
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        early_stopping = EarlyStopping(patience=25, delta=0.0001, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+        early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.5)
 
         # Training loop
         train_losses = []
@@ -279,16 +279,18 @@ class Resnet_model(nn.Module):
                 break
 
         plt.figure(1)
-        plt.rcParams["figure.figsize"] = [7.50, 3.50]
-        plt.rcParams["figure.autolayout"] = True
         valid = np.array(val_losses)
         train = np.array(train_losses)
-        x = [i+1 for i in range(epochs)]
-        plt.title("train and val losses over epochs")
-        plt.plot(x, valid, color='blue') #valid loss
-        plt.plot(x, train, color="red")
-        plt.savefig(f"{output_filename}_losses")
-        plt.close()
+        x = np.arange(1, epochs + 1)
+
+        plt.title("Train and Validation Losses Over Epochs")
+        plt.plot(x, valid, color='blue', label='Validation Loss')  # Validation loss
+        plt.plot(x, train, color="red", label='Training Loss')  # Training loss
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.savefig(f"{output_filename}_losses.png")
+        plt.show()
 
         torch.save(self.model.state_dict(), output_filename)
         return output_filename
