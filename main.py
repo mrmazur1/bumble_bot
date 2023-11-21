@@ -104,9 +104,9 @@ if __name__ == "__main__":
     cm = confusion_matrix_me()
 
 
-    d1 = 'res50_128_30'
-    d2 = 'res34_128_30'
-    d3 = 'res18_128_30'
+    d1 = 'res50_65_30'
+    d2 = 'res50_32_30'
+    d3 = 'res34_64_30'
     d4 = 'res34_32_50'
     d5 = 'res18_64_50'
     d6 = 'res18_32_50'
@@ -115,55 +115,44 @@ if __name__ == "__main__":
     d9 = 'res152_64_50'
     d10 = 'res152_32_50'
 
-    test(d1, '50', 'hot')
-    test(d1, '50', 'not')
-    test(d2, '34', 'hot')
-    test(d2, '34', 'not')
-    test(d3, '18', 'hot')
-    test(d3, '18', 'not')
-    test(d4, '34', 'hot')
-    test(d4, '34', 'not')
-    test(d5, '18', 'hot')
-    test(d5, '18', 'not')
-    test(d6, '18', 'hot')
-    test(d6, '18', 'not')
-    #
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('50'))
-    # try:
-    #     n1 = rm.train(d1, 128, 30)
-    #     m1 = test(n1, '50')
-    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d1)
-    #
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('34'))
-    # try:
-    #     n2 = rm.train(d2, 128, 30)
-    #     m2 = test(n2, '34')
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d2)
-    #
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('18'))
-    # try:
-    #     n1 = rm.train(d3, 128, 30)
-    #     m1 = test(n1, '18')
-    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d3)
 
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('34'))
-    # try:
-    #     n2 = rm.train(d4, 32, 50)
-    #     m2 = test(n2, '34')
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d4)
-    #
+
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('50'))
+    try:
+        n1 = rm.train(d1, 64, 30)
+        m1 = test(n1, '50')
+        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d1)
+
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('50'))
+    try:
+        n2 = rm.train(d2, 32, 30)
+        m2 = test(n2, '50')
+        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d2)
+
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('34'))
+    try:
+        n1 = rm.train(d3, 64, 30)
+        m1 = test(n1, '34')
+        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d3)
+
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('34'))
+    try:
+        n2 = rm.train(d4, 32, 50)
+        m2 = test(n2, '34')
+        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d4)
+
     # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model('18'))
     # try:
     #     n2 = rm.train(d5, 64, 50)
