@@ -48,7 +48,7 @@ class bumbleLoader:
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
-        self.tracker = 0
+        self.tracker, self.numLikes, self.numDislikes = 0,0,0
 
     def load(self):
         cookieManager.load_cookies(self.driver) #load password stored in cookie
@@ -80,20 +80,20 @@ class bumbleLoader:
         self.up = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
         self.imget = imageGetter()
 
-    def start(self, tracker, num_swipes=2):
-        shutil.rmtree('outputs')
+    def start(self, tracker, numLikes=0, numDislikes=0,num_swipes=2):
+        shutil.rmtree('outputs') #clear any previous data
         os.mkdir('outputs/')
         shutil.rmtree('tmp')
         os.mkdir('tmp/')
-        self.tracker=tracker
+        self.tracker, self.numLikes, self.numDislikes = tracker, numLikes, numDislikes
         for i in range(num_swipes):
             self.tracker+=1
             if self.tracker > num_swipes: return
             self.idx = i
             time.sleep(1)
             self.close_popups()
-            try:
-                photo = WebDriverWait(self.driver, 10).until(
+            try: #this checks if a profile pops up
+                photo = WebDriverWait(self.driver, 3).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
             finally:
                 pass
@@ -103,15 +103,16 @@ class bumbleLoader:
             pred = self.rateImages()
             if pred: #like
                 self.like.click()
+                self.numLikes+=1
                 self.moveFiles(f"tmp/{self.idx}/", f"outputs/liked/{str(i)}/")
             else: #dislike
                 self.dislike.click()
+                self.numDislikes+=1
                 self.moveFiles(f"tmp/{self.idx}/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
-        #self.driver.quit()
         return
 
-    def moveFiles(self, source, destination):
+    def moveFiles(self, source, destination): #moves files from tmp to either the like or dislike folder
         if os.path.exists(destination):
             shutil.rmtree(destination)
         os.makedirs(destination)
@@ -163,8 +164,10 @@ class bumbleLoader:
         print(f"predicted class: {predicted_class}")
         print(f"outputs: {output}\n")
         val = output.cpu().numpy()
-        return val[0,0], val[0,1]
+        return val[0,0], val[0,1] #values for like and dislike as percentages
 
+    #close any popup notifications. these are easy to deal with while other stuff
+    # will just have the program restart the build if an enexpected event pops up
     def close_popups(self):
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:

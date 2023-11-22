@@ -4,7 +4,7 @@ import time
 
 
 if __name__ == "__main__":
-    count = 30
+    count = 100
     exit_flag = False
     bl = bumbleLoader(modelType='101', modelPath='res_101_32_200')
     start = time.monotonic()
@@ -18,7 +18,8 @@ if __name__ == "__main__":
         except Exception as e:
             html = bl.driver.page_source
             bl.driver.save_screenshot("web_page_screenshot.png")
-            val = bl.tracker
+            val,nlikes, ndislikes = bl.tracker, bl.numLikes, bl.numDislikes
+            print(f"restarting at count of {val}")
             bl.driver.quit()
             with open("web_page_source.html", "w", encoding="utf-8") as file:
                 file.write(html)
@@ -26,6 +27,6 @@ if __name__ == "__main__":
                 traceback.print_exc()
             bl = bumbleLoader(modelType='101', modelPath='res101_64_50')
             bl.load()
-            bl.start(val, num_swipes=count - val)
+            bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
+    print(f"ending after completing {bl.tracker} profiles with {bl.numLikes} likes and {bl.numDislikes} dislikes")
     bl.driver.quit()
-    print("done")
