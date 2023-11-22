@@ -6,7 +6,7 @@ import time
 if __name__ == "__main__":
     count = 1
     exit_flag = False
-    bl = bumbleLoader(modelType='152', modelPath='res_152_32_100')
+    bl = bumbleLoader(modelType='101', modelPath='res_101_64_150')
     start = time.monotonic()
     while bl.tracker < count:
         curr = time.monotonic()
@@ -25,7 +25,7 @@ if __name__ == "__main__":
                 file.write(html)
                 # print(e)
                 traceback.print_exc()
-            bl = bumbleLoader(modelType='152', modelPath='res_152_32_100')
+            bl = bumbleLoader(modelType='101', modelPath='res_101_64_150')
             bl.load()
             bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
     print(f"ending after completing {bl.tracker} profiles with {bl.numLikes} likes and {bl.numDislikes} dislikes")
