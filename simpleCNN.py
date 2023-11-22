@@ -152,7 +152,7 @@ class EarlyStopping:
         bias = 0
         if self.best_score is None or score > self.best_score + self.delta:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, optimizer, epoch)
+            #self.save_checkpoint(val_loss, model, optimizer, epoch)
             self.counter = 0
         else:
             self.counter += 1

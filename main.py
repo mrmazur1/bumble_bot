@@ -106,6 +106,7 @@ if __name__ == "__main__":
     # test('res_101_64_150', '101', 'hot')
     # test('res_101_32_200', '101', 'not')
     # test('res_101_32_200', '101', 'hot')
+    #print("hello")
 
     vals = d1.split('_')
     rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
