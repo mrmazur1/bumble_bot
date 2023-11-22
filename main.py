@@ -96,38 +96,27 @@ if __name__ == "__main__":
     transform = myTransform().transform
     class_labels = ['Hot', 'Not']  # Replace with your actual class label
 
-    # model = test('res50_32_4', '50')
-    # cm = confusion_matrix_me()
-    # cm.run(model, 'NN_data/hot_or_not_oct_23/')
-
     cm = confusion_matrix_me()
 
-
-    d1 = 'res_50_32_250'
-    d2 = 'res_34_32_250'
+    d1 = 'res_152_64_150'
+    d2 = 'res_152_32_150'
     d3 = 'res_101_32_200'
     d4 = 'res_34_64_200'
-    d5 = 'res18_64_50'
-    d6 = 'res18_32_50'
-    d7 = 'res101_64_50'
-    d8 = 'res101_32_50'
-    d9 = 'res152_64_50'
-    d10 = 'res152_32_50'
 
-    test('res_101_32_200', '101', 'hot')
-    test('res_101_32_200', '101', 'not')
-    test('res_101_32_200', '101', 'hot')
+    # test('res_101_64_150', '101', 'hot')
+    # test('res_101_32_200', '101', 'not')
+    # test('res_101_32_200', '101', 'hot')
 
-    # vals = d1.split('_')
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
-    # try:
-    #     n1 = rm.train(d1, int(vals[2]), int(vals[3]))
-    #     m1 = test(n1, vals[1])
-    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d1)
-    #
+    vals = d1.split('_')
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
+    try:
+        n1 = rm.train(d1, int(vals[2]), int(vals[3]))
+        m1 = test(n1, vals[1])
+        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d1)
+
     # vals = d2.split('_')
     # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
     # try:

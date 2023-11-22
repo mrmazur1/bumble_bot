@@ -231,7 +231,7 @@ class Resnet_model(nn.Module):
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
+        early_stopping = EarlyStopping(patience=80, delta=0.0001, checkpoint_path=output_filename)
         scheduler = lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.5)
 
         # Training loop
@@ -290,7 +290,8 @@ class Resnet_model(nn.Module):
         plt.ylabel('Loss')
         plt.legend()
         plt.savefig(f"{output_filename}_losses.png")
-        plt.show()
+        plt.close()
+
 
         torch.save(self.model.state_dict(), output_filename)
         return output_filename
@@ -335,7 +336,7 @@ class confusion_matrix_me():
                 all_labels.extend(labels.cpu().numpy())
                 all_predictions.extend(predicted.cpu().numpy())
 
-        cm = confusion_matrix(y_true=all_labels, y_pred=all_predictions, labels=[1, 0])
+        cm = confusion_matrix(y_true=all_labels, y_pred=all_predictions, labels=[0, 1])
 
         print("total files checked: "+ str(len(train_dataset)))
         plt.figure(2, figsize=(10, 8))
