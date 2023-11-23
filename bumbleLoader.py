@@ -50,6 +50,12 @@ class bumbleLoader:
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
 
+        #remove files at beginning
+        shutil.rmtree('outputs')  # clear any previous data
+        os.mkdir('outputs/')
+        shutil.rmtree('tmp')
+        os.mkdir('tmp/')
+
     def load(self):
         cookieManager.load_cookies(self.driver) #load password stored in cookie
         self.close_popups()  # close annoying popups
@@ -81,10 +87,6 @@ class bumbleLoader:
         self.imget = imageGetter()
 
     def start(self, tracker, numLikes=0, numDislikes=0,num_swipes=2):
-        shutil.rmtree('outputs') #clear any previous data
-        os.mkdir('outputs/')
-        shutil.rmtree('tmp')
-        os.mkdir('tmp/')
         self.tracker, self.numLikes, self.numDislikes = tracker, numLikes, numDislikes
         for i in range(num_swipes):
             self.tracker+=1

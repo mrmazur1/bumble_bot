@@ -1,9 +1,21 @@
 from bumbleLoader import bumbleLoader
 import traceback
 import time
+import os
+import shutil
+
+def move():
+    direc = 'outputs/'
+    for root, dirs, files in os.walk(direc):
+        for file in files:
+            name = os.fsdecode(file)
+            print(file)
+            file_path = os.path.join(root, file)
+            print(file_path)
+            #shutil.move(file_path, 'C:/Users/Mazur/Desktop/bumble_bot/bumble_bot/images/' + name)
 
 if __name__ == "__main__":
-    count = 1
+    count = 300
     exit_flag = False
     bl = bumbleLoader(modelType='152', modelPath='res_152_32_100.pth')
     start = time.monotonic()
@@ -29,3 +41,4 @@ if __name__ == "__main__":
             bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
     print(f"ending after completing {bl.tracker} profiles with {bl.numLikes} likes and {bl.numDislikes} dislikes")
     bl.driver.quit()
+
