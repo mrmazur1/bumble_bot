@@ -99,19 +99,19 @@ if __name__ == "__main__":
     cm = confusion_matrix_me()
 
     d1 = 'res_152_64_160_.pth'
-    d2 = 'res_152_32_160_.pth'
+    d2 = 'res_152_32_100_new.pth'
     d3 = 'res_101_32_200.pth'
     d4 = 'res_34_64_200'
 
-    vals = d1.split('_')
-    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
-    try:
-        n1 = rm.train(d1, int(vals[2]), int(vals[3]))
-        m1 = test(n1, vals[1])
-        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
-    except Exception as e:
-        print(e)
-        torch.save(rm.model.state_dict(), d1)
+    # vals = d1.split('_')
+    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
+    # try:
+    #     n1 = rm.train(d1, int(vals[2]), int(vals[3]))
+    #     m1 = test(n1, vals[1])
+    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d1)
 
     vals = d2.split('_')
     rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))

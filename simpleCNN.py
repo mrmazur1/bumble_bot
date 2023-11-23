@@ -234,7 +234,7 @@ class Resnet_model(nn.Module):
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
         early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.25)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
         # Training loop
         train_losses = []
