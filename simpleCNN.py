@@ -152,6 +152,7 @@ class EarlyStopping:
         bias = 0
         if self.best_score is None or score > self.best_score + self.delta:
             self.best_score = score
+            print(f'Model checkpoint saved with validation loss: {val_loss}')
             #self.save_checkpoint(val_loss, model, optimizer, epoch)
             self.counter = 0
         else:
@@ -209,6 +210,7 @@ class Resnet_model(nn.Module):
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(10),
+            transforms.RandomPerspective(0.2),
             transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -231,8 +233,8 @@ class Resnet_model(nn.Module):
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        early_stopping = EarlyStopping(patience=70, delta=0.0001, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.5)
+        early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.25)
 
         # Training loop
         train_losses = []
