@@ -1,12 +1,13 @@
 from bumbleLoader import bumbleLoader
 import traceback
 import time
+from selenium.common.exceptions import TimeoutException
 
 
 if __name__ == "__main__":
-    count = 300
+    count = 1
     exit_flag = False
-    bl = bumbleLoader(modelType='152', modelPath='res_152_32_100.pth')
+    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_.pth')
     start = time.monotonic()
     while bl.tracker < count:
         curr = time.monotonic()
@@ -25,9 +26,13 @@ if __name__ == "__main__":
                 file.write(html)
                 # print(e)
                 traceback.print_exc()
-            bl = bumbleLoader(modelType='152', modelPath='res_152_32_100.pth')
-            bl.load()
-            bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
+            try:
+                bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_.pth')
+                bl.load()
+                bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
+            except TimeoutException as e:
+                print("most likely came to end of profiles in area")
+                break
     print(f"ending after completing {bl.tracker} profiles with {bl.numLikes} likes and {bl.numDislikes} dislikes")
     bl.driver.quit()
 

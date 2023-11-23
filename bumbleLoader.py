@@ -77,7 +77,7 @@ class bumbleLoader:
         self.close_popups()
         #wait for page to load
         try:
-            photo = WebDriverWait(self.driver, 10).until(
+            photo = WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
         finally:
             pass
