@@ -231,7 +231,7 @@ class Resnet_model(nn.Module):
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        early_stopping = EarlyStopping(patience=80, delta=0.0001, checkpoint_path=output_filename)
+        early_stopping = EarlyStopping(patience=70, delta=0.0001, checkpoint_path=output_filename)
         scheduler = lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.5)
 
         # Training loop
@@ -344,6 +344,9 @@ class confusion_matrix_me():
         plt.xlabel('Predicted')
         plt.ylabel('True')
         plt.title('Confusion Matrix')
+        vals = name.split('_')
+        vals.pop()
+        name = '_'.join(vals)
         plt.savefig("figure_"+name)
         plt.close()
 
