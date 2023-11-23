@@ -1,18 +1,7 @@
 from bumbleLoader import bumbleLoader
 import traceback
 import time
-import os
-import shutil
 
-def move():
-    direc = 'outputs/'
-    for root, dirs, files in os.walk(direc):
-        for file in files:
-            name = os.fsdecode(file)
-            print(file)
-            file_path = os.path.join(root, file)
-            print(file_path)
-            #shutil.move(file_path, 'C:/Users/Mazur/Desktop/bumble_bot/bumble_bot/images/' + name)
 
 if __name__ == "__main__":
     count = 300

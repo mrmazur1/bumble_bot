@@ -2,7 +2,7 @@ import os
 import time
 
 from PIL import Image
-from selenium.common import WebDriverException, TimeoutException
+from selenium.common import TimeoutException
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -12,11 +12,12 @@ import shutil
 
 from torchvision import models
 
-from simpleCNN import SimpleCNN, myTransform
+from simpleCNN import myTransform
 from downloadImage import imageGetter
 import torch
 import cookieManager
 from selenium import webdriver
+
 
 def get_resnet_model(model_type='resnet18'):
     available_models = {
@@ -35,7 +36,7 @@ def get_resnet_model(model_type='resnet18'):
         raise ValueError(f"Invalid model type: {model_type}")
 
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com", modelType='18', modelPath = 'res18_32_50'):
+    def __init__(self, url="https://bumble.com", modelType='18', modelPath='res18_32_50'):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -134,16 +135,16 @@ class bumbleLoader:
             #ignore all the other pics that are not the main focus like cht profile pics/my profile/icons/etc
             if pic.get_attribute('class') != 'media-box__picture-image':
                 continue
-            numImages+=1
+            numImages += 1
             try:
                 img_path, img_name = self.getImage(pic.get_attribute('src'))
                 pred_hot, pred_not = self.predict(img_path, img_name)
                 if pred_hot > pred_not:
-                    liked+=1
+                    liked += 1
             except Exception as e:
                 print(e)
                 pass
-        print(str(liked) + " "+ str(numImages))
+        print(str(liked) + " " + str(numImages))
         return liked > numImages//2
 
     #takes the image and makes a prediction based on the model
@@ -169,7 +170,7 @@ class bumbleLoader:
         return val[0,0], val[0,1] #values for like and dislike as percentages
 
     #close any popup notifications. these are easy to deal with while other stuff
-    # will just have the program restart the build if an enexpected event pops up
+    # will just have the program restart the build if an expected event pops up
     def close_popups(self):
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:
