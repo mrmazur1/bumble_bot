@@ -5,9 +5,9 @@ from selenium.common.exceptions import TimeoutException
 
 
 if __name__ == "__main__":
-    count = 1
+    count = 10
     exit_flag = False
-    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_.pth')
+    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best.pth')
     start = time.monotonic()
     while bl.tracker < count:
         curr = time.monotonic()
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 # print(e)
                 traceback.print_exc()
             try:
-                bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_.pth')
+                bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best.pth')
                 bl.load()
                 bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
             except TimeoutException as e:

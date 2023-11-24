@@ -12,7 +12,8 @@ import shutil
 
 from torchvision import models
 
-from simpleCNN import myTransform
+#from simpleCNN import myTransform
+from myData import myData
 from downloadImage import imageGetter
 import torch
 import cookieManager
@@ -50,6 +51,9 @@ class bumbleLoader:
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
+        data = myData()
+        self.transform = data.transform
+        self.class_labels = data.class_labels
 
         #remove files at beginning
         shutil.rmtree('outputs')  # clear any previous data
@@ -151,17 +155,15 @@ class bumbleLoader:
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
         input_image = Image.open(picture_path+filename)
-        input_tensor = myTransform().transform_input(input_image)
+        input_tensor = self.transform(input_image)
         input_batch = input_tensor.unsqueeze(0)  # Add a batch dimension
 
         with torch.no_grad():
             output = self.model(input_batch)
 
-        class_labels = ['hot', 'not']
-
         probabilities = torch.softmax(output, dim=1)
         _, predicted_class = torch.max(probabilities, 1)
-        predicted_class = class_labels[predicted_class.item()]
+        predicted_class = self.class_labels[predicted_class.item()]
         output = F.softmax(output, dim=1)
         print(f"filename: {filename}")
         print(f"predicted class: {predicted_class}")
