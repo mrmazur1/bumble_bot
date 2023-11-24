@@ -26,115 +26,21 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore", UserWarning)
 
 
-class myTransform():
+
+
+class myData():
     def __init__(self):
         self.transform = transforms.Compose([
-            transforms.Resize((192, 192)),
-            transforms.RandomHorizontalFlip(0.5),
-            transforms.RandomGrayscale(0.2),
-            transforms.ColorJitter(brightness=0.2, saturation=0.2, hue=0.2, contrast=0.2),
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.RandomPerspective(0.2),
+            transforms.RandomCrop(224),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
-
-    def transform_input(self, image):
-        ret = self.transform(image)
-        return ret
-
-
-class SimpleCNN(nn.Module):
-    def __init__(self):
-        super(SimpleCNN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(16 * 96 * 96, 512)  # Adjust input size based on your image size
-        self.fc2 = nn.Linear(512, 2)  # Adjust output size based on your task
-
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-
-class Trainer():
-    def __init__(self):
-        self.model = SimpleCNN()
-
-    def train_model(self, output_filename, data_directory, batch_size=16, epochs=8):
-        # Define your ImageFolder dataset
-        use_cuda = torch.cuda.is_available()
-        device = torch.device("cuda" if use_cuda else "cpu")
-        self.model.to(device=device)
-        transform = myTransform().transform
-        dataset = ImageFolder(data_directory, transform=transform)
-
-        # Specify the percentage for the validation set
-        validation_split = 0.2  # 20% of the data for validation
-
-        # Calculate the sizes for training and validation sets
-        num_data = len(dataset)
-        num_validation = int(validation_split * num_data)
-        num_training = num_data - num_validation
-
-        # Use random_split to split the dataset
-        train_dataset, val_dataset = random_split(dataset, [num_training, num_validation])
-
-        # Create DataLoader instances for training and validation
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size)
-
-        # Loss function and optimizer
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
-
-        # Training loop
-        train_losses = []
-        val_losses = []
-
-        for epoch in range(epochs):
-            self.model.train()  # Set the model to training mode
-            running_loss = 0.0
-
-            progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}',
-                                unit='batch', leave=False)
-            for batch_idx, (inputs, labels) in progress_bar:
-                inputs, labels = inputs.to(device), labels.to(device)
-                optimizer.zero_grad()
-                outputs = self.model(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-
-                running_loss += loss.item()
-
-            # Calculate and store the average training loss for the epoch
-            average_train_loss = running_loss / len(train_loader)
-            train_losses.append(average_train_loss)
-
-            # Validation loop (evaluate the model on the validation set)
-            self.model.eval()  # Set the model to evaluation mode
-            running_loss = 0.0
-
-            with torch.no_grad():
-                for inputs, labels in val_loader:
-                    inputs, labels = inputs.to(device), labels.to(device)  # Move data to the GPU
-
-                    outputs = self.model(inputs)  # Forward pass
-                    loss = criterion(outputs, labels)  # Calculate the loss
-
-                    running_loss += loss.item()
-
-            # Calculate and store the average validation loss for the epoch
-            average_val_loss = running_loss / len(val_loader)
-            val_losses.append(average_val_loss)
-
-            # Print or log the training and validation losses for this epoch
-            print(
-                f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}")
-
-        torch.save(self.model.state_dict(), output_filename)
+        self.class_labels = ['Hot', 'Not']
 
 
 class EarlyStopping:
@@ -197,8 +103,20 @@ class Resnet_model(nn.Module):
 
         # Create random_bias as a learnable parameter
         self.random_bias = nn.Parameter(torch.randn(1))
-
         self.data_directory = data_directory
+        self.labels = ['Hot', 'Not']
+
+        # self.transform = transform = transforms.Compose([
+        #     transforms.RandomResizedCrop(224),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.RandomRotation(10),
+        #     transforms.RandomPerspective(0.2),
+        #     transforms.RandomCrop(224),
+        #     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # ])
+
 
     def forward(self, x):
         resnet50_output = self.resnet50(x)
@@ -206,18 +124,8 @@ class Resnet_model(nn.Module):
         return resnet50_output
 
     def train(self, output_filename, batch_size=16, epochs=8, lr = 0.001):
-        transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.RandomPerspective(0.2),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
 
-        dataset = datasets.ImageFolder(root=self.data_directory, transform=transform)
-
+        dataset = datasets.ImageFolder(root=self.data_directory, transform=transform())
         # Specify the percentage for the validation set
         validation_split = 0.2  # 20% of the data for validation
 
@@ -232,9 +140,9 @@ class Resnet_model(nn.Module):
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
         early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
         # Training loop
         train_losses = []
@@ -319,7 +227,7 @@ class confusion_matrix_me():
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-        validation_split = 0
+        validation_split = 0.9
         dataset = ImageFolder(data_directory, transform=transform)
         num_data = len(dataset)
         num_validation = int(validation_split * num_data)
