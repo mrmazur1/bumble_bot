@@ -18,29 +18,12 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+from myData import myData
 import sys
 
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore", UserWarning)
-
-
-
-
-class myData():
-    def __init__(self):
-        self.transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.RandomPerspective(0.2),
-            transforms.RandomCrop(224),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
-        self.class_labels = ['Hot', 'Not']
 
 
 class EarlyStopping:
@@ -104,18 +87,9 @@ class Resnet_model(nn.Module):
         # Create random_bias as a learnable parameter
         self.random_bias = nn.Parameter(torch.randn(1))
         self.data_directory = data_directory
-        self.labels = ['Hot', 'Not']
-
-        # self.transform = transform = transforms.Compose([
-        #     transforms.RandomResizedCrop(224),
-        #     transforms.RandomHorizontalFlip(),
-        #     transforms.RandomRotation(10),
-        #     transforms.RandomPerspective(0.2),
-        #     transforms.RandomCrop(224),
-        #     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-        #     transforms.ToTensor(),
-        #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        # ])
+        data = myData()
+        self.labels = data.class_labels
+        self.transform = data.transform
 
 
     def forward(self, x):
@@ -123,9 +97,9 @@ class Resnet_model(nn.Module):
         # out_bias = resnet50_output+self.random_bias
         return resnet50_output
 
-    def train(self, output_filename, batch_size=16, epochs=8, lr = 0.001):
+    def train(self, output_filename, optimizer, batch_size=16, epochs=8, lr = 0.001):
 
-        dataset = datasets.ImageFolder(root=self.data_directory, transform=transform())
+        dataset = datasets.ImageFolder(root=self.data_directory, transform=self.transform)
         # Specify the percentage for the validation set
         validation_split = 0.2  # 20% of the data for validation
 
@@ -140,7 +114,8 @@ class Resnet_model(nn.Module):
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
+        #optimizerASGD = optim.ASGD(self.model.parameters(), weight_decay=1e-4)
+        #optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
         early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
         scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
@@ -202,7 +177,7 @@ class Resnet_model(nn.Module):
         plt.savefig(f"{output_filename}_losses.png")
         plt.close()
 
-
+        #torch.save(early_stopping.best_checkpoint, "best_val_"+output_filename)
         torch.save(self.model.state_dict(), output_filename)
         return output_filename
 

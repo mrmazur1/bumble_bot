@@ -3,6 +3,7 @@ import os
 import torch
 from PIL import Image
 from torchvision import models, transforms
+from torch import optim
 
 from simpleCNN import Resnet_model, confusion_matrix_me, EarlyStopping, myData
 
@@ -14,13 +15,22 @@ def get_resnet_model(model_type='resnet18'):
         '101': models.resnet101(pretrained=True),
         '152': models.resnet152(pretrained=True),
     }
-    # Check if the specified model_type is in the available_models dictionary
     if model_type in available_models:
-        # Instantiate the selected model and return it
         return available_models[model_type]
     else:
-        # If the specified model_type is not found, raise an exception or return a default model
         raise ValueError(f"Invalid model type: {model_type}")
+
+def get_optim(params, opt='sgd'):
+    opt = opt.lower()
+    available_optims = {
+        'sgd': optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=1e-4),
+        'asgd': optim.ASGD(params, weight_decay=1e-4),
+        'adagrad': optim.Adagrad(params, weight_decay=1e-4)
+    }
+    if opt in available_optims:
+        return available_optims[opt]
+    else:
+        raise ValueError(f"Invalid model type: {opt}")
 
 def bing(model, type='hot'):
     data = myData()
@@ -70,7 +80,7 @@ def train(name, batch, pocs, model):
     print(f"name: {name}")
     model = get_resnet_model(model)
     trainer = Resnet_model()
-    trainer.train(name, 'NN_data/hot_or_not_oct_23', batch, pocs, model)
+    trainer.train(name, 'NN_data/hot_or_not_oct_23', batch, pocs, model, optim)
     return name
 
 def test(name, model, type='hot'):
@@ -90,19 +100,20 @@ if __name__ == "__main__":
     # d3 = 'res_101_32_200.pth'
     # d4 = 'res_34_64_200'
 
-    d1 = 'res_101_32_3_.pth'
-    d2 = 'res_152_64_3_.pth'
-    #d3 = 'res_152_32_3_.pth'
+    d1 = 'res_152_32_5_asgd_.pth'
+    d2 = 'res_152_32_5_sgd_.pth'
+    d3 = 'res_152_32_3_adagrad_.pth'
 
-    test(d1, '101')
+    #test(d1, '101')
     # test(d1, '152')
     # test(d1, '152')
 
 
     vals = d1.split('_')
     rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
+    o1 = get_optim(list(rm.model.parameters()), vals[4])
     try:
-        n1 = rm.train(d1, int(vals[2]), int(vals[3]))
+        n1 = rm.train(d1, o1, int(vals[2]), int(vals[3]))
         m1 = test(n1, vals[1])
         cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
     except Exception as e:
@@ -111,33 +122,25 @@ if __name__ == "__main__":
 
     vals = d2.split('_')
     rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
+    o1 = get_optim(list(rm.model.parameters()), vals[4])
     try:
-        n2 = rm.train(d2, int(vals[2]), int(vals[3]))
+        n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
         m2 = test(n2, vals[1])
         cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
     except Exception as e:
         print(e)
         torch.save(rm.model.state_dict(), d2)
 
-    # vals = d3.split('_')
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
-    # try:
-    #     n1 = rm.train(d3, int(vals[2]), int(vals[3]))
-    #     m1 = test(n1, vals[1])
-    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d3)
-
-    # vals = d4.split('_')
-    # rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
-    # try:
-    #     n2 = rm.train(d4, int(vals[2]), int(vals[3]))
-    #     m2 = test(n2, vals[1])
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
-    # except Exception as e:
-    #     print(e)
-    #     torch.save(rm.model.state_dict(), d4)
+    vals = d3.split('_')
+    rm = Resnet_model('NN_data/hot_or_not_oct_23', get_resnet_model(vals[1]))
+    o1 = get_optim(list(rm.model.parameters()), vals[4])
+    try:
+        n2 = rm.train(d3, o1, int(vals[2]), int(vals[3]))
+        m2 = test(n2, vals[1])
+        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32)
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d3)
 
 
 
