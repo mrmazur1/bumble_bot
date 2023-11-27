@@ -7,7 +7,7 @@ def save_cookies(driver):
         if cookie['name'] == 'session' or cookie['name'] == 'HDR-X-User-id':
             cookies_to_save.append(cookie)
     #cookies_list = driver.get_cookies()
-    pickle.dump(cookies_to_save, open("cookies_desk.pkl", "wb"))
+    pickle.dump(cookies_to_save, open("cookies_new.pkl", "wb"))
 
 def load_cookies(driver, desk=False):
     # if desk:
