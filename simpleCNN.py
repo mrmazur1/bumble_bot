@@ -85,9 +85,18 @@ class training_model(nn.Module):
         if architecture == 'res':
             num_ftrs = self.model.fc.in_features
             self.model.fc = nn.Linear(num_ftrs, 2)
-        if architecture == 'dense':
+        elif architecture == 'dense':
             num_ftrs = self.model.classifier.in_features
             self.model.classifier = nn.Linear(num_ftrs, 2)
+        elif architecture == 'vgg':
+            num_ftrs = self.model.classifier[6].in_features
+            self.model.classifier[6] = nn.Linear(num_ftrs, 2)
+        elif architecture == 'google':
+            num_ftrs = self.model.fc.in_features
+            self.model.fc = nn.Linear(num_ftrs, 2)
+        else:
+            print("architecture not supported")
+            return
         self.model.to(self.device)
 
         # Create random_bias as a learnable parameter

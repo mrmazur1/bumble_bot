@@ -17,7 +17,12 @@ def get_model(model_type='resnet18'):
         '121': models.densenet121(pretrained=True),
         '161': models.densenet161(pretrained=True),
         '169': models.densenet169(pretrained=True),
-        '201': models.densenet201(pretrained=True)
+        '201': models.densenet201(pretrained=True),
+        'google': models.googlenet(pretrained=True), #only one
+        '11': models.vgg11(pretrained=True),
+        '19':models.vgg19(pretrained=True),
+        '13': models.vgg13(pretrained=True),
+        '16':models.vgg16(pretrained=True)
     }
     if model_type in available_models:
         return available_models[model_type]
@@ -101,6 +106,13 @@ def load_model(name, type, arch):
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
     if arch == 'dense':
         model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
+    if arch == 'vgg':
+        num_ftrs = model.classifier[6].in_features
+        model.classifier[6] = torch.nn.Linear(num_ftrs, 2)
+    if arch == 'google':
+        num_ftrs = model.fc.in_features
+        model.fc = torch.nn.Linear(num_ftrs, 2)
+
     model.load_state_dict(torch.load(name, map_location=torch.device('cuda')))
     model.to('cuda')
     model.eval()
@@ -114,9 +126,9 @@ if __name__ == "__main__":
 
     d1 = "res_152_32_1_adam_00001_.pth"
     #d2 = "res_152_64_5_adam_0001_.pth"
-    d2 = 'dense_121_32_3_adam_.pth'
-    d3 = 'res_152_32_8_sgd_005.pth'
-    d4 = 'res_152_32_100_adam_betas_.pth'
+    d2 = 'dense_121_32_1_adam_.pth'
+    d3 = 'google_google_32_1_adam_.pth'
+    d4 = 'vgg_11_32_1_adam_.pth'
     d5 = 'res_152_32_10_sgd_001_.pth'
 
     # vals = d1.split('_')
@@ -129,8 +141,19 @@ if __name__ == "__main__":
     # except Exception as e:
     #     print(e)
     #     torch.save(rm.model.state_dict(), d1)
+    #
+    # vals = d2.split('_')
+    # rm = training_model(small, get_model(vals[1]), vals[0])
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # try:
+    #     n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
+    #     m2 = test(n2, vals[1], arch=vals[0])
+    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d2)
 
-    vals = d2.split('_')
+    vals = d3.split('_')
     rm = training_model(small, get_model(vals[1]), vals[0])
     o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
     try:
@@ -139,7 +162,18 @@ if __name__ == "__main__":
         cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
     except Exception as e:
         print(e)
-        torch.save(rm.model.state_dict(), d2)
+        torch.save(rm.model.state_dict(), d3)
+
+    vals = d4.split('_')
+    rm = training_model(small, get_model(vals[1]), vals[0])
+    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    try:
+        n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
+        m2 = test(n2, vals[1], arch=vals[0])
+        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    except Exception as e:
+        print(e)
+        torch.save(rm.model.state_dict(), d4)
 
 
 
