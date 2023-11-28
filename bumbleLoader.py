@@ -13,27 +13,27 @@ import shutil
 from torchvision import models
 
 #from simpleCNN import myTransform
-from myData import myData
+import myData
 from downloadImage import imageGetter
 import torch
 import cookieManager
 from selenium import webdriver
 
-
-def get_resnet_model(model_type='resnet18'):
+def get_model(model_type='18'):
     available_models = {
-        '18': models.resnet18(),
-        '34': models.resnet34(),
-        '50': models.resnet50(),
-        '101': models.resnet101(),
-        '152': models.resnet152(),
+        '18': models.resnet18(pretrained=True),
+        '34': models.resnet34(pretrained=True),
+        '50': models.resnet50(pretrained=True),
+        '101': models.resnet101(pretrained=True),
+        '152': models.resnet152(pretrained=True),
+        '121': models.densenet121(pretrained=True),
+        '161': models.densenet161(pretrained=True),
+        '169': models.densenet169(pretrained=True),
+        '201': models.densenet201(pretrained=True)
     }
-    # Check if the specified model_type is in the available_models dictionary
     if model_type in available_models:
-        # Instantiate the selected model and return it
         return available_models[model_type]
     else:
-        # If the specified model_type is not found, raise an exception or return a default model
         raise ValueError(f"Invalid model type: {model_type}")
 
 class bumbleLoader:
@@ -46,12 +46,12 @@ class bumbleLoader:
         if size['width'] < 850:
             self.driver.set_window_size(850, 1000)
         # self.model = SimpleCNN()
-        self.model = get_resnet_model(modelType)
+        self.model = get_model(modelType)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
-        data = myData()
+        data = myData.get_architecture(modelPath.split('_')[0])
         self.transform = data.transform
         self.class_labels = data.class_labels
 
