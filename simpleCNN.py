@@ -18,8 +18,9 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from myData import myData
+import myData
 import sys
+import os
 
 if not sys.warnoptions:
     import warnings
@@ -73,21 +74,26 @@ class EarlyStopping:
             print(f'Resumed training from epoch {checkpoint["epoch"]} with the loaded random_bias')
 
 
-class Resnet_model(nn.Module):
-    def __init__(self, data_directory, type=models.resnet18(pretrained=False)):
-        super(Resnet_model, self).__init__()
+class training_model(nn.Module):
+    def __init__(self, data_directory, type=models.resnet18(pretrained=False), architecture ='res'):
+        super(training_model, self).__init__()
         self.model = type
         use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
         self.model.to(self.device)
-        num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_ftrs, 2)
+
+        if architecture == 'res':
+            num_ftrs = self.model.fc.in_features
+            self.model.fc = nn.Linear(num_ftrs, 2)
+        if architecture == 'dense':
+            num_ftrs = self.model.classifier.in_features
+            self.model.classifier = nn.Linear(num_ftrs, 2)
         self.model.to(self.device)
 
         # Create random_bias as a learnable parameter
         self.random_bias = nn.Parameter(torch.randn(1))
         self.data_directory = data_directory
-        data = myData()
+        data = myData.get_architecture(architecture)
         self.labels = data.class_labels
         self.transform = data.transform
 
@@ -98,6 +104,12 @@ class Resnet_model(nn.Module):
         return resnet50_output
 
     def train(self, output_filename, optimizer, batch_size=16, epochs=8, lr = 0.001):
+        name = output_filename.split('_')
+        name.pop()
+        name = '_'.join(name)
+        if os.path.exists(name+'.log'):
+            os.remove(name+'.log')
+        file = open(name+'.log', 'w')
 
         dataset = datasets.ImageFolder(root=self.data_directory, transform=self.transform)
         # Specify the percentage for the validation set
@@ -116,8 +128,8 @@ class Resnet_model(nn.Module):
         criterion = nn.CrossEntropyLoss()
         #optimizerASGD = optim.ASGD(self.model.parameters(), weight_decay=1e-4)
         #optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
-        early_stopping = EarlyStopping(patience=100, delta=0.0001, checkpoint_path=output_filename)
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+        #early_stopping = EarlyStopping(patience=140, delta=0.00001, checkpoint_path=output_filename)
+        #scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
         # Training loop
         train_losses = []
@@ -141,7 +153,7 @@ class Resnet_model(nn.Module):
 
             average_train_loss = running_loss / len(train_loader)
             train_losses.append(average_train_loss)
-            scheduler.step()
+            #scheduler.step()
             self.model.eval()  # Set the model to evaluation mode
             running_loss = 0.0
 
@@ -152,16 +164,22 @@ class Resnet_model(nn.Module):
                     loss = criterion(outputs, labels)
                     running_loss += loss.item()
 
+            avg_grad = 0
+            for name, param in self.model.named_parameters():
+                if param.grad is not None:
+                    avg_grad += param.grad.norm().item()
+            avg_grad = avg_grad/len(train_loader.dataset)
             average_val_loss = running_loss / len(val_loader)
             val_losses.append(average_val_loss)
-            early_stopping(average_val_loss, self.model, optimizer, epoch, self.random_bias)
+            file.write(f"Epoch: {epoch}  val loss: {average_val_loss}  train loss: {average_train_loss}  Gradient: {avg_grad}\n")
+            #early_stopping(average_val_loss, self.model, optimizer, epoch, self.random_bias)
 
             # print(f"Epoch [{epoch + 1}/{epochs}] - Train Loss: {average_train_loss:.4f} - Val Loss: {average_val_loss:.4f}", end=" | ")
 
-            if early_stopping.early_stop:
-                print("Early stopping")
-                epochs = len(val_losses)
-                break
+            # if early_stopping.early_stop:
+            #     print("Early stopping")
+            #     epochs = len(val_losses)
+            #     break
 
         plt.figure(1)
         valid = np.array(val_losses)
@@ -176,7 +194,7 @@ class Resnet_model(nn.Module):
         plt.legend()
         plt.savefig(f"{output_filename}_losses.png")
         plt.close()
-
+        file.close()
         #torch.save(early_stopping.best_checkpoint, "best_val_"+output_filename)
         torch.save(self.model.state_dict(), output_filename)
         return output_filename
@@ -185,7 +203,7 @@ class confusion_matrix_me():
     def __init__(self):
         pass
 
-    def run(self,name, model, data_directory,batch_size=32):
+    def run(self, name, model, data_directory,batch_size=32, arch = 'res'):
         # Assuming your model is named 'model' and your test loader is 'test_loader'
         device = torch.device("cuda")
         model.to(device)
@@ -193,14 +211,16 @@ class confusion_matrix_me():
         all_labels = []
         all_predictions = []
 
-        transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        transform = myData.get_architecture(arch).transform
+
+        # transform = transforms.Compose([
+        #     transforms.RandomResizedCrop(224),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.RandomRotation(10),
+        #     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        # ])
 
         validation_split = 0.9
         dataset = ImageFolder(data_directory, transform=transform)
