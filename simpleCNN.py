@@ -94,6 +94,9 @@ class training_model(nn.Module):
         elif architecture == 'google':
             num_ftrs = self.model.fc.in_features
             self.model.fc = nn.Linear(num_ftrs, 2)
+        elif architecture == 'alex':
+            num_ftrs = self.model.classifier[-1].in_features
+            self.model.classifier[-1] = nn.Linear(num_ftrs, 2)
         else:
             print("architecture not supported")
             return
@@ -135,15 +138,13 @@ class training_model(nn.Module):
         val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
         criterion = nn.CrossEntropyLoss()
-        #optimizerASGD = optim.ASGD(self.model.parameters(), weight_decay=1e-4)
-        #optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
         #early_stopping = EarlyStopping(patience=140, delta=0.00001, checkpoint_path=output_filename)
         #scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
         # Training loop
         train_losses = []
         val_losses = []
-
+        grads = []
         for epoch in range(epochs):
             self.model.train()  # Set the model to training mode
             running_loss = 0.0
@@ -174,10 +175,12 @@ class training_model(nn.Module):
                     running_loss += loss.item()
 
             avg_grad = 0
+
             for name, param in self.model.named_parameters():
                 if param.grad is not None:
                     avg_grad += param.grad.norm().item()
             avg_grad = avg_grad/len(train_loader.dataset)
+            grads.append(avg_grad)
             average_val_loss = running_loss / len(val_loader)
             val_losses.append(average_val_loss)
             file.write(f"Epoch: {epoch}  val loss: {average_val_loss}  train loss: {average_train_loss}  Gradient: {avg_grad}\n")
@@ -198,6 +201,7 @@ class training_model(nn.Module):
         plt.title("Train and Validation Losses Over Epochs")
         plt.plot(x, valid, color='blue', label='Validation Loss')  # Validation loss
         plt.plot(x, train, color="red", label='Training Loss')  # Training loss
+        plt.plot(x, grads, color='green', label='avg Gradient') #gradient for that epoch
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
