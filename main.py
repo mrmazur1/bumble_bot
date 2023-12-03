@@ -8,9 +8,9 @@ import cookieManager
 
 if __name__ == "__main__":
     #count = input("how many profiles do you want to run: ")
-    count = 200
+    count = 2
     exit_flag = False
-    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best.pth')
+    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best_cpy.pth')
     start = time.monotonic()
     while bl.tracker < count:
         curr = time.monotonic()

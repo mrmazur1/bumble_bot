@@ -20,6 +20,7 @@ import cookieManager
 from selenium import webdriver
 
 def get_model(model_type='18'):
+    #Todo update deprication
     available_models = {
         '18': models.resnet18(pretrained=True),
         '34': models.resnet34(pretrained=True),
