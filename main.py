@@ -10,7 +10,7 @@ if __name__ == "__main__":
     #count = input("how many profiles do you want to run: ")
     count = 2
     exit_flag = False
-    bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best_cpy.pth')
+    bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_70_adam_.pth', arch='dense')
     start = time.monotonic()
     while bl.tracker < count:
         curr = time.monotonic()

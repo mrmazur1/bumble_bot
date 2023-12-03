@@ -19,8 +19,7 @@ import torch
 import cookieManager
 from selenium import webdriver
 
-def get_model(model_type='18'):
-    #Todo update deprication
+def get_model(model_type='resnet18'):
     available_models = {
         '18': models.resnet18(pretrained=True),
         '34': models.resnet34(pretrained=True),
@@ -30,7 +29,13 @@ def get_model(model_type='18'):
         '121': models.densenet121(pretrained=True),
         '161': models.densenet161(pretrained=True),
         '169': models.densenet169(pretrained=True),
-        '201': models.densenet201(pretrained=True)
+        '201': models.densenet201(pretrained=True),
+        'google': models.googlenet(pretrained=True), #only one
+        '11': models.vgg11(pretrained=True),
+        '19':models.vgg19(pretrained=True),
+        '13': models.vgg13(pretrained=True),
+        '16':models.vgg16(pretrained=True),
+        'alex':models.alexnet(pretrained=True)
     }
     if model_type in available_models:
         return available_models[model_type]
@@ -38,7 +43,7 @@ def get_model(model_type='18'):
         raise ValueError(f"Invalid model type: {model_type}")
 
 class bumbleLoader:
-    def __init__(self, url="https://bumble.com", modelType='18', modelPath='res18_32_50'):
+    def __init__(self, url="https://bumble.com", modelType='18', modelPath='res18_32_50', arch='res'):
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -48,11 +53,23 @@ class bumbleLoader:
             self.driver.set_window_size(850, 1000)
         # self.model = SimpleCNN()
         self.model = get_model(modelType)
-        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
+        if arch == 'res':
+            self.model.fc = torch.nn.Linear(self.model.fc.in_features, 2)
+        if arch == 'dense':
+            self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, 2)
+        if arch == 'vgg':
+            num_ftrs = self.model.classifier[6].in_features
+            self.model.classifier[6] = torch.nn.Linear(num_ftrs, 2)
+        if arch == 'google':
+            num_ftrs = self.model.fc.in_features
+            self.model.fc = torch.nn.Linear(num_ftrs, 2)
+        if arch == 'alex':
+            num_ftrs = self.model.classifier[-1].in_features
+            self.model.classifier[-1] = torch.nn.Linear(num_ftrs, 2)
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
-        data = myData.get_architecture(modelPath.split('_')[0])
+        data = myData.get_architecture(arch)
         self.transform = data.transform
         self.class_labels = data.class_labels
 
