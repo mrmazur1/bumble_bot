@@ -62,7 +62,7 @@ def bing(model, arch, type='hot'):
     tot = 0
     avg_hot, avg_not = 0,0
     len_test = len(os.listdir(direc))*0.1
-    for idx, file in enumerate(os.listdir(direc)):
+    for idx, file in enumerate(reversed(os.listdir(direc))):
         if idx > len_test: break
         filename = os.fsdecode(file)
         try:
@@ -153,56 +153,55 @@ if __name__ == "__main__":
     big = 'NN_data/hot_or_not_oct_23/'
     small = 'nn_smaller/'
 
-    d1 = "res_152_128_50_adam_00001_.pth"
-    #d2 = "res_152_64_5_adam_0001_.pth"
-    d2 = 'dense_201_128_50_adam_.pth'
-    d3 = 'google_google_128_50_adam_.pth'
-    d4 = 'alex_alex_128_50_adam_.pth'
+    d1 = "res_152_64_70_adam_00001_.pth"
+    d2 = 'dense_201_64_70_adam_.pth'
+    d3 = 'google_google_64_70_adam_.pth'
+    # d4 = 'alex_alex_256_100_adam_.pth'
 
 
-    vals = d1.split('_')
-    rm = training_model(small, get_model(vals[1]), vals[0])
-    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
-    try:
-        n1 = rm.train(d1, o1, int(vals[2]), int(vals[3]))
-        m1 = test(n1, vals[1], arch=vals[0])
-        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
-    except Exception as e:
-        print(e)
-        torch.save(rm.model.state_dict(), d1)
-
-    vals = d2.split('_')
-    rm = training_model(small, get_model(vals[1]), vals[0])
-    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
-    try:
-        n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
-        m2 = test(n2, vals[1], arch=vals[0])
-        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
-    except Exception as e:
-        print(e)
-        torch.save(rm.model.state_dict(), d2)
-
-    vals = d3.split('_')
-    rm = training_model(small, get_model(vals[1]), vals[0])
-    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
-    try:
-        n2 = rm.train(d3, o1, int(vals[2]), int(vals[3]))
-        m2 = test(n2, vals[1], arch=vals[0])
-        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
-    except Exception as e:
-        print(e)
-        torch.save(rm.model.state_dict(), d3)
+    # vals = d1.split('_')
+    # rm = training_model(big, get_model(vals[1]), vals[0])
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # try:
+    #     n1 = rm.train(d1, o1, int(vals[2]), int(vals[3]))
+    #     m1 = test(n1, vals[1], arch=vals[0])
+    #     cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d1)
     #
-    vals = d4.split('_')
-    rm = training_model(small, get_model(vals[1]), vals[0])
-    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
-    try:
-        n2 = rm.train(d4, o1, int(vals[2]), int(vals[3]))
-        m2 = test(n2, vals[1], arch=vals[0])
-        cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
-    except Exception as e:
-        print(e)
-        torch.save(rm.model.state_dict(), d4)
+    # vals = d2.split('_')
+    # rm = training_model(big, get_model(vals[1]), vals[0])
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # try:
+    #     n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
+    #     m2 = test(n2, vals[1], arch=vals[0])
+    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d2)
+    #
+    # vals = d3.split('_')
+    # rm = training_model(big, get_model(vals[1]), vals[0])
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # try:
+    #     n2 = rm.train(d3, o1, int(vals[2]), int(vals[3]))
+    #     m2 = test(n2, vals[1], arch=vals[0])
+    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d3)
+
+    # vals = d4.split('_')
+    # rm = training_model(small, get_model(vals[1]), vals[0])
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # try:
+    #     n2 = rm.train(d4, o1, int(vals[2]), int(vals[3]))
+    #     m2 = test(n2, vals[1], arch=vals[0])
+    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    # except Exception as e:
+    #     print(e)
+    #     torch.save(rm.model.state_dict(), d4)
 
 
 
