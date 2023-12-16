@@ -66,12 +66,14 @@ class bumbleLoader:
         if arch == 'alex':
             num_ftrs = self.model.classifier[-1].in_features
             self.model.classifier[-1] = torch.nn.Linear(num_ftrs, 2)
+        #self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
         data = myData.get_architecture(arch)
         self.transform = data.transform
         self.class_labels = data.class_labels
+        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
         #remove files at beginning
         shutil.rmtree('outputs')  # clear any previous data
@@ -168,6 +170,11 @@ class bumbleLoader:
                 pass
         print(str(liked) + " " + str(numImages))
         return liked > numImages//2
+
+    def detect_human(self, picture_path, filename=None):
+        img = Image.open(picture_path+filename)
+        results = self.yolo(img)
+        results.print()
 
     #takes the image and makes a prediction based on the model
     def predict(self, picture_path, filename=None):
