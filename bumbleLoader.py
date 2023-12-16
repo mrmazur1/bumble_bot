@@ -73,7 +73,7 @@ class bumbleLoader:
         data = myData.get_architecture(arch)
         self.transform = data.transform
         self.class_labels = data.class_labels
-        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5x', pretrained=True)
 
         #remove files at beginning
         shutil.rmtree('outputs')  # clear any previous data
@@ -175,6 +175,9 @@ class bumbleLoader:
         img = Image.open(picture_path+filename)
         results = self.yolo(img)
         results.print()
+        detected_objects = results.pandas().xyxy[0]
+        print(detected_objects)
+        #results.show()
 
     #takes the image and makes a prediction based on the model
     def predict(self, picture_path, filename=None):
