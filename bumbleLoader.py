@@ -66,12 +66,14 @@ class bumbleLoader:
         if arch == 'alex':
             num_ftrs = self.model.classifier[-1].in_features
             self.model.classifier[-1] = torch.nn.Linear(num_ftrs, 2)
+        #self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.load_state_dict(torch.load(modelPath, map_location=torch.device('cpu')))
         self.model.eval()
         self.tracker, self.numLikes, self.numDislikes = 0,0,0
         data = myData.get_architecture(arch)
         self.transform = data.transform
         self.class_labels = data.class_labels
+        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5x', pretrained=True)
 
         #remove files at beginning
         shutil.rmtree('outputs')  # clear any previous data
@@ -169,9 +171,18 @@ class bumbleLoader:
         print(str(liked) + " " + str(numImages))
         return liked > numImages//2
 
+    def detect_human(self, picture_path, filename=None):
+        img = Image.open(picture_path+filename)
+        results = self.yolo(img)
+        detected_objects = results.pandas().xyxy[0]
+        return 'person' in detected_objects.values
+
     #takes the image and makes a prediction based on the model
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
+        if not self.detect_human(picture_path, filename):
+            print("no person detected")
+            return 0, 100
         input_image = Image.open(picture_path+filename)
         input_tensor = self.transform(input_image)
         input_batch = input_tensor.unsqueeze(0)  # Add a batch dimension
