@@ -174,14 +174,16 @@ class bumbleLoader:
     def detect_human(self, picture_path, filename=None):
         img = Image.open(picture_path+filename)
         results = self.yolo(img)
-        results.print()
         detected_objects = results.pandas().xyxy[0]
-        print(detected_objects)
-        #results.show()
+        return 'person' in detected_objects.values
+
 
     #takes the image and makes a prediction based on the model
     def predict(self, picture_path, filename=None):
         # Load and preprocess your input data (e.g., an image)
+        if not self.detect_human(picture_path, filename):
+            print("no person detected")
+            return 0, 100
         input_image = Image.open(picture_path+filename)
         input_tensor = self.transform(input_image)
         input_batch = input_tensor.unsqueeze(0)  # Add a batch dimension
