@@ -44,6 +44,13 @@ def get_model(model_type='resnet18'):
 
 class bumbleLoader:
     def __init__(self, url="https://bumble.com", modelType='18', modelPath='res18_32_50', arch='res'):
+        """
+        connect to bumble, load model, and clear old data
+        :param url: url to site
+        :param modelType: model type like 'res18' or 'densenet201'
+        :param modelPath: path to model dictionary to load
+        :param arch: specifies which type of model architecture to use like 'res' or' dense' or 'google'
+        """
         edge_driver_path = os.path.join(os.getcwd(), 'web_driver/msedgedriver.exe')
         edge_service = Service(edge_driver_path)
         self.driver = webdriver.Edge(service=edge_service)
@@ -82,6 +89,9 @@ class bumbleLoader:
         os.mkdir('tmp/')
 
     def load(self):
+        """
+        this loads up the bumbleloader by logging in and making sure it comes in contact with a profile
+        """
         cookieManager.load_cookies(self.driver) #load password stored in cookie
         self.close_popups()  # close annoying popups
         #login
@@ -112,6 +122,12 @@ class bumbleLoader:
         self.imget = imageGetter()
 
     def start(self, tracker, numLikes=0, numDislikes=0,num_swipes=2):
+        """
+        :param tracker: tracks total number of profiles analyzed
+        :param numLikes: tracks the amount of profiles the liked
+        :param numDislikes: tracks number of profiles disliked
+        :param num_swipes: the number of swipes to go until the goal is reached.
+        """
         self.tracker, self.numLikes, self.numDislikes = tracker, numLikes, numDislikes
         for i in range(num_swipes):
             self.tracker+=1
@@ -137,9 +153,12 @@ class bumbleLoader:
                 self.numDislikes+=1
                 self.moveFiles(f"tmp/{self.idx}/", f"outputs/disliked/{str(i)}/")
             time.sleep(1)
-        return
 
     def moveFiles(self, source, destination): #moves files from tmp to either the like or dislike folder
+        """
+        :param source: source of file and context root
+        :param destination: new destination to move file to
+        """
         if os.path.exists(destination):
             shutil.rmtree(destination)
         os.makedirs(destination)
@@ -149,20 +168,31 @@ class bumbleLoader:
             shutil.copy(source_path, destination_path)
 
     def getImage(self, url):
+        """
+        uses imageGetter to download the source image using the image url
+        :param url: source image url
+        :return: return the contect root and the filename to the picture
+        """
         path, filename = self.imget.getImage(url, self.idx)
         return path, filename
 
-    def rateImages(self): #Take images and rate theit attractiveness
+    def rateImages(self):
+        """
+        this method rates images in the profiles
+        :return: return true if most of the pics are hot else false if >=50% are labeled not
+        """
         numImages, liked = 0, 0
         pics = self.driver.find_elements(By.TAG_NAME, 'img')
         for pic in pics: #go through each profile pic
             #ignore all the other pics that are not the main focus like cht profile pics/my profile/icons/etc
             if pic.get_attribute('class') != 'media-box__picture-image':
                 continue
-            numImages += 1
+            numImages+=1
             try:
                 img_path, img_name = self.getImage(pic.get_attribute('src'))
-                pred_hot, pred_not = self.predict(img_path, img_name)
+                pred_hot, pred_not = self.predict(img_path, numImages, img_name)
+                if pred_hot == -1:
+                    continue
                 if pred_hot > pred_not:
                     liked += 1
             except Exception as e:
@@ -172,17 +202,31 @@ class bumbleLoader:
         return liked > numImages//2
 
     def detect_human(self, picture_path, filename=None):
+        """
+        :param picture_path: context root path of the file
+        :param filename: the name of the file without context root
+        :return: returns
+        """
         img = Image.open(picture_path+filename)
         results = self.yolo(img)
         detected_objects = results.pandas().xyxy[0]
+        print(f"person detected in photo: {'person' in detected_objects.values}")
         return 'person' in detected_objects.values
 
-    #takes the image and makes a prediction based on the model
-    def predict(self, picture_path, filename=None):
+    def predict(self, picture_path, numImages, filename=None):
+        """
+        it makes a prediciton on the profiles attractiveness if a person is detected
+        :param picture_path: path to picture to analyze
+        :param numImages: number of images being analyzed
+        :param filename: file name to picture
+        :return: returns the predicted values for hot or not returning -1, -1
+        if no person is detected
+         """
         # Load and preprocess your input data (e.g., an image)
         if not self.detect_human(picture_path, filename):
-            print("no person detected")
-            return 0, 100
+            numImages-=1
+            print()
+            return -1, -1
         input_image = Image.open(picture_path+filename)
         input_tensor = self.transform(input_image)
         input_batch = input_tensor.unsqueeze(0)  # Add a batch dimension
@@ -200,9 +244,11 @@ class bumbleLoader:
         val = output.cpu().numpy()
         return val[0,0], val[0,1] #values for like and dislike as percentages
 
-    #close any popup notifications. these are easy to deal with while other stuff
-    # will just have the program restart the build if an expected event pops up
+
     def close_popups(self):
+        """
+        closes annoying popups in the app that block clicking of profiles
+        """
         iframes = self.driver.find_elements(By.TAG_NAME, 'iframe')
         for frame in iframes:
             try:
