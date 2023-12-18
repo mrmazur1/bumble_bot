@@ -7,8 +7,9 @@ import cookieManager
 
 
 if __name__ == "__main__":
-    #count = input("how many profiles do you want to run: ")
-    count = 10
+    #TODO make way to quit when constantly throwing exceptions
+    count = int(input("how many profiles do you want to run: "))
+    #count = 10
     exit_flag = False
     bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_70_adam_.pth', arch='dense')
     start = time.monotonic()
@@ -24,17 +25,17 @@ if __name__ == "__main__":
             bl.driver.save_screenshot("web_page_screenshot.png")
             val,nlikes, ndislikes = bl.tracker, bl.numLikes, bl.numDislikes
             print(f"restarting at count of {val}")
-            bl.driver.get("https://www.google.com/")
-            bl.driver.get("https://bumble.com")
+            # bl.driver.get("https://www.google.com/")
+            # bl.driver.get("https://bumble.com")
             bl.load()
-            #bl.driver.quit()
+            bl.driver.quit()
             with open("web_page_source.html", "w", encoding="utf-8") as file:
                 file.write(html)
                 # print(e)
                 traceback.print_exc()
             try:
-                #bl = bumbleLoader(modelType='152', modelPath='res_152_32_150_best.pth')
-                #bl.load()
+                bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_70_adam_.pth', arch='dense')
+                bl.load()
                 bl.start(val, numLikes=nlikes, numDislikes=ndislikes, num_swipes=count - val)
             except TimeoutException as e:
                 print("most likely came to end of profiles in area")
