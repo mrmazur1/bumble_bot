@@ -14,7 +14,7 @@ def load_cookies(driver, desk=False):
     #     with open("cookies_dek.pkl", "rb") as file:
     #         cookies = pickle.load(file)
     # else:
-    with open("cookies.pkl", "rb") as file:
+    with open("cookies_new.pkl", "rb") as file:
             cookies = pickle.load(file)
     for cookie in cookies:
         driver.add_cookie(cookie)
