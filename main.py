@@ -33,8 +33,8 @@ if __name__ == "__main__":
             bl.driver.save_screenshot("web_page_screenshot.png")
             val,nlikes, ndislikes = bl.tracker, bl.numLikes, bl.numDislikes
             print(f"restarting at count of {val}")
-            # bl.driver.get("https://www.google.com/")
-            # bl.driver.get("https://bumble.com")
+            bl.driver.get("https://www.google.com/")
+            bl.driver.get("https://bumble.com")
             bl.load()
             bl.driver.quit()
             with open("web_page_source.html", "w", encoding="utf-8") as file:
