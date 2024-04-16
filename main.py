@@ -10,13 +10,23 @@ from simpleCNN import training_model, confusion_matrix_me, EarlyStopping
 from imagehash import average_hash
 
 
+#TODO figure out why this is here below
 def get_image_info(self, image_path):
+    """
+    :param self:
+    :param image_path: path of the image
+    :return: return the image hash
+    """
     # Get information based on the hash of the image
     hash_value = str(average_hash(Image.open(image_path)))
     return self.image_hashes.get(hash_value, None)
 
 
 def get_model(model_type='resnet18'):
+    """
+    :param model_type:     this method loads the model depending on the name of that model
+    :return: return the pre-trained model
+    """
     available_models = {
         '18': models.resnet18(pretrained=True),
         '34': models.resnet34(pretrained=True),
@@ -40,6 +50,17 @@ def get_model(model_type='resnet18'):
         raise ValueError(f"Invalid model type: {model_type}")
 
 def get_optim(params, opt='sgd', learn =0.0001, mom =0.9, wd = 1e-4, b1=0.9, b2=0.999, epsil=1e-7):
+    """
+    :param params: iterable of parameters to optimize or dicts defining parameter groups
+    :param opt: the optimizer to use
+    :param learn: learning rate
+    :param mom: momentum
+    :param wd: weight decay
+    :param b1: beta 1
+    :param b2: beta 2
+    :param epsil:epsilon
+    :return: return the optimizer if there
+    """
     opt = opt.lower()
     available_optims = {
         'sgd': optim.SGD(params, lr=learn, momentum=mom, nesterov=True),
@@ -54,7 +75,13 @@ def get_optim(params, opt='sgd', learn =0.0001, mom =0.9, wd = 1e-4, b1=0.9, b2=
     else:
         raise ValueError(f"Invalid model type: {opt}")
 
-def bing(model, arch, type='hot'):
+def rate_images(model, arch, type='hot'):
+    """
+    rate the image and check that the file type is correct
+    :param model: model name
+    :param arch: model architecture
+    :param type: testing either the hot or not folder
+    """
     data = myData.get_architecture(arch)
     class_labels = data.class_labels
     direc = f"NN_data/hot_or_not_oct_23/{type}/"
@@ -97,8 +124,18 @@ def bing(model, arch, type='hot'):
         tot += 1
     print(f"checked folder, {type}")
     print(f"tot: {tot}\nnot: {cnt_not} avg: {avg_not/tot}\nhot: {cnt_hot} avg: {avg_hot/tot}\n")
+    
+    
 
 def train(name, batch, pocs, model):
+    """
+    this method trains the model weights
+    :param name: name of .pth to save to
+    :param batch: batch size
+    :param pocs: number of epochs to perform
+    :param model: model number to work with
+    :return:
+    """
     print(f"name: {name}")
     model = get_model(model)
     trainer = training_model()
@@ -106,11 +143,26 @@ def train(name, batch, pocs, model):
     return name
 
 def test(name, model, arch, type='hot'):
+    """
+    this method tests the model just trained
+    :param name: model .pth file
+    :param model: the model from the type of the name ex: resnet18 or resnet34
+    :param arch: model architecture ex: resnet vs densenet
+    :param type: either test the hot or not folder
+    :return:
+    """
     model = load_model(name, model, arch)
-    bing(model, arch, type)
+    rate_images(model, arch, type)
     return model
 
 def load_model(name, type, arch):
+    """
+    this method loads the model from the type of the name ex: resnet18 or resnet34, its architecture ex: resnet vs densenet
+    :param name:
+    :param type:
+    :param arch:
+    :return:
+    """
     model = get_model(type)
     if arch == 'res':
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
@@ -132,6 +184,10 @@ def load_model(name, type, arch):
     return model
 
 def removeExtras():
+    """
+    remove image copies in the training data folder
+    :return:
+    """
     hashes = set()
     rootdir = 'NN_data/hot_or_not_oct_23'
     cnt = 0
@@ -154,8 +210,8 @@ if __name__ == "__main__":
     small = 'nn_smaller/'
 
     #model/model_type/batch_size/epochs/optimizer/learning_rate
-    d1 = "res_152_64_2_adam_00001_.pth"
-    d2 = 'dense_201_64_70_adam_.pth'
+    #d1 = "res_152_64_2_adam_00001_.pth"
+    d1 = 'dense_201_64_130_adam_.pth'
     d3 = 'google_google_64_70_adam_.pth'
     # d4 = 'alex_alex_256_100_adam_.pth'
 
