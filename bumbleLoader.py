@@ -81,6 +81,7 @@ class bumbleLoader:
         self.transform = data.transform
         self.class_labels = data.class_labels
         self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5x', pretrained=True)
+        self.imget = imageGetter()
 
         #remove files at beginning
         shutil.rmtree('outputs')  # clear any previous data
@@ -107,7 +108,7 @@ class bumbleLoader:
             print(e.msg)
             self.driver.quit()
         #logged in at this point
-        time.sleep(2)
+        time.sleep(2) #dont move it will break program
         self.close_popups()
         #wait for page to load
         try:
@@ -115,11 +116,11 @@ class bumbleLoader:
                 EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[2]/div/div[1]/span')))
         finally:
             pass
-        self.like = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
-        self.dislike = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
-        self.down = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
-        self.up = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
-        self.imget = imageGetter()
+        # self.like = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
+        # self.dislike = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
+        # self.down = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
+        # self.up = self.driver.find_element(By.XPATH, '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
+
 
     def start(self, tracker, numLikes=0, numDislikes=0,num_swipes=2):
         """
@@ -128,12 +129,23 @@ class bumbleLoader:
         :param numDislikes: tracks number of profiles disliked
         :param num_swipes: the number of swipes to go until the goal is reached.
         """
+
+        self.like = self.driver.find_element(By.XPATH,
+                                             '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[3]/div/div[1]/span')
+        self.dislike = self.driver.find_element(By.XPATH,
+                                                '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[2]/div/div[2]/div/div[1]/div/div[1]/span')
+        self.down = self.driver.find_element(By.XPATH,
+                                             '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[2]')
+        self.up = self.driver.find_element(By.XPATH,
+                                           '//*[@id="main"]/div/div[1]/main/div[2]/div/div/span/div[1]/article/div[2]/div[1]')
+
         self.tracker, self.numLikes, self.numDislikes = tracker, numLikes, numDislikes
         for i in range(num_swipes):
+            print(f"profile number: {self.tracker}")
             self.tracker+=1
             if self.tracker > num_swipes: return
             self.idx = i
-            time.sleep(1)
+            time.sleep(1) #dont change it will break program
             self.close_popups()
             try: #this checks if a profile pops up
                 photo = WebDriverWait(self.driver, 3).until(
@@ -152,7 +164,7 @@ class bumbleLoader:
                 self.dislike.click()
                 self.numDislikes+=1
                 self.moveFiles(f"tmp/{self.idx}/", f"outputs/disliked/{str(i)}/")
-            time.sleep(1)
+            time.sleep(1) #dont move it will break program
 
     def moveFiles(self, source, destination): #moves files from tmp to either the like or dislike folder
         """
@@ -246,6 +258,7 @@ class bumbleLoader:
 
 
     def close_popups(self):
+        #TODO: look into making this more efficient
         """
         closes annoying popups in the app that block clicking of profiles
         """

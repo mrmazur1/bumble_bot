@@ -7,6 +7,7 @@ import cookieManager
 
 def save_cookie(driver):
     input("continue: ")
+    print("resuming")
     cookieManager.save_cookies(driver)
     cookieManager.load_cookies(driver)
 
@@ -26,7 +27,8 @@ if __name__ == "__main__":
         if curr > start+3600: #1 hour max
             break
         try:
-            bl.load()
+            if option != 1:
+                bl.load()
             bl.start(0, num_swipes=count)
         except Exception as e:
             html = bl.driver.page_source
@@ -41,6 +43,8 @@ if __name__ == "__main__":
                 file.write(html)
                 # print(e)
                 traceback.print_exc()
+            #TODO: fix crash after "caught up" screen
+            #the following code crashes due to looking for a non-existent object during bl.load()
             try:
                 bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_70_adam_.pth', arch='dense')
                 bl.load()
