@@ -8,4 +8,13 @@ this is a work in progress and does not have a gui, Also the .pth file that hold
 
 https://drive.google.com/file/d/1vGT0zNjq2gkdoMsERkVfuecAPoC8v2yu/view?usp=sharing
 
+# steps
+1: you need to download the .pth file if you dont want to train your own. The training branch has code for training and you can customize your 'hot' and 'not' folder for your preferences. This is under NN_data/hot_or_not_oct_23/ (i need to change the name). To be warned, training takes a while (hours). Otherwise, download the .pth from the google drive link.
+
+2: I am working on making selenium work with chrome/firefox, but Edge was the easiest to get working initially somehow and it needs the most up to date edge driver. The project currently has one in the 'web driver' folder but it may be out of date one day. so get it if you need to.
+
+3: now you should be able to run the code normally. If this is your first time, select an arbitrary amount for the 'number of swipes' input and then 1 for the 'what do you want to do section'. the program will run and wait until you tell it to continue. before continuing, log in successfully with your phone or email and then run. you need to do this before bumble bot saves your login info. 
+
+4: just let it run. and leave it alone. it will look like its not doing anything but it takes a sec or two to analyze photos.
+
 
