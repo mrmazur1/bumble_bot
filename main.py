@@ -153,6 +153,7 @@ if __name__ == "__main__":
     big = 'NN_data/hot_or_not_oct_23/'
     small = 'nn_smaller/'
 
+    #model/model_type/batch_size/epochs/optimizer/learning_rate
     d1 = "res_152_64_2_adam_00001_.pth"
     d2 = 'dense_201_64_70_adam_.pth'
     d3 = 'google_google_64_70_adam_.pth'
