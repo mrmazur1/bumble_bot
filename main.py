@@ -84,7 +84,7 @@ def rate_images(model, arch, type='hot'):
     """
     data = myData.get_architecture(arch)
     class_labels = data.class_labels
-    direc = f"NN_data/hot_or_not_oct_23/{type}/"
+    direc = f"NN_data/images/{type}/"
     cnt_hot, cnt_not = 0, 0
     tot = 0
     avg_hot, avg_not = 0,0
@@ -139,7 +139,7 @@ def train(name, batch, pocs, model):
     print(f"name: {name}")
     model = get_model(model)
     trainer = training_model()
-    trainer.train(name, 'NN_data/hot_or_not_oct_23', batch, pocs, model, optim)
+    trainer.train(name, 'NN_data/images', batch, pocs, model, optim)
     return name
 
 def test(name, model, arch, type='hot'):
@@ -189,7 +189,7 @@ def removeExtras():
     :return:
     """
     hashes = set()
-    rootdir = 'NN_data/hot_or_not_oct_23'
+    rootdir = 'NN_data/images'
     cnt = 0
     for subdir, dirs, files in os.walk(rootdir):
         for file in files:
@@ -206,7 +206,7 @@ def removeExtras():
 if __name__ == "__main__":
     cm = confusion_matrix_me()
 
-    big = 'NN_data/hot_or_not_oct_23/'
+    big = 'NN_data/images/'
     small = 'nn_smaller/'
 
     #model/model_type/batch_size/epochs/optimizer/learning_rate
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     try:
         n1 = rm.train(d1, o1, int(vals[2]), int(vals[3]))
         m1 = test(n1, vals[1], arch=vals[0])
-        cm.run(n1, m1, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+        cm.run(n1, m1, 'NN_data/images/', 32, vals[0])
     except Exception as e:
         print(e)
         torch.save(rm.model.state_dict(), d1)
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     # try:
     #     n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
     #     m2 = test(n2, vals[1], arch=vals[0])
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    #     cm.run(n2, m2, 'NN_data/images/', 32, vals[0])
     # except Exception as e:
     #     print(e)
     #     torch.save(rm.model.state_dict(), d2)
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     # try:
     #     n2 = rm.train(d3, o1, int(vals[2]), int(vals[3]))
     #     m2 = test(n2, vals[1], arch=vals[0])
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    #     cm.run(n2, m2, 'NN_data/images/', 32, vals[0])
     # except Exception as e:
     #     print(e)
     #     torch.save(rm.model.state_dict(), d3)
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # try:
     #     n2 = rm.train(d4, o1, int(vals[2]), int(vals[3]))
     #     m2 = test(n2, vals[1], arch=vals[0])
-    #     cm.run(n2, m2, 'NN_data/hot_or_not_oct_23/', 32, vals[0])
+    #     cm.run(n2, m2, 'NN_data/images/', 32, vals[0])
     # except Exception as e:
     #     print(e)
     #     torch.save(rm.model.state_dict(), d4)
