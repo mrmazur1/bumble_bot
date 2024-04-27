@@ -211,14 +211,14 @@ if __name__ == "__main__":
 
     #model/model_type/batch_size/epochs/optimizer/learning_rate
     #d1 = "res_152_64_2_adam_00001_.pth"
-    d1 = 'dense_201_64_130_adam_.pth'
-    d3 = 'google_google_64_70_adam_.pth'
+    d1 = 'dense_201_64_100_adam_00001learn.pth'
+    #d2 = 'dense_201_64_10_adam_.pth'
     # d4 = 'alex_alex_256_100_adam_.pth'
 
 
     vals = d1.split('_')
     rm = training_model(big, get_model(vals[1]), vals[0])
-    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.00001, mom=0.9)
     try:
         n1 = rm.train(d1, o1, int(vals[2]), int(vals[3]))
         m1 = test(n1, vals[1], arch=vals[0])
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
     # vals = d2.split('_')
     # rm = training_model(big, get_model(vals[1]), vals[0])
-    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
+    # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.00001, mom=0.9)
     # try:
     #     n2 = rm.train(d2, o1, int(vals[2]), int(vals[3]))
     #     m2 = test(n2, vals[1], arch=vals[0])
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     # except Exception as e:
     #     print(e)
     #     torch.save(rm.model.state_dict(), d2)
-    #
+
     # vals = d3.split('_')
     # rm = training_model(big, get_model(vals[1]), vals[0])
     # o1 = get_optim(list(rm.model.parameters()), vals[4], learn=0.0001)
