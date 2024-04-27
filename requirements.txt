@@ -1,5 +1,18 @@
-torch==2.0.0
-torchvision>=0.15.1
-Pillow==9.5.0
 selenium==4.10.0
 ipython==8.16.1
+requests~=2.31.0
+numpy~=1.26.2
+matplotlib~=3.8.1
+seaborn~=0.13.0
+scikit-learn
+tqdm~=4.66.1
+pandas
+opencv-contrib-python
+pillow
+--find-links https://download.pytorch.org/whl/cu121
+torch
+torchvision
+torchaudio
+ultralytics
+
+
