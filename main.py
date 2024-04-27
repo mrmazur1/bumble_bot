@@ -3,6 +3,7 @@ import traceback
 import time
 from selenium.common.exceptions import TimeoutException
 import os
+import sys
 import cookieManager
 
 def save_cookie(driver):
@@ -13,6 +14,7 @@ def save_cookie(driver):
 
 
 if __name__ == "__main__":
+    log = open('log_event.log', 'w').close() #clear the log file
     count = int(input("how many profiles do you want to run: "))
     option = int(input("what do you want to do? 1 (save cookie), 2 (run normally): "))
     #count = 10
@@ -34,7 +36,9 @@ if __name__ == "__main__":
                 html = bl.driver.page_source
                 with open("web_page_source.html", "w", encoding="utf-8") as file:
                     file.write(html)
-                    traceback.print_exc()
+                    with open("log_event.log", "w", encoding="utf-8") as log:
+                        log.write(str(e))
+                        log.write(traceback.format_exc())
                 bl.driver.save_screenshot("web_page_screenshot.png")
                 val,nlikes, ndislikes = bl.tracker, bl.numLikes, bl.numDislikes
                 print(f"restarting at count of {val}")

@@ -21,21 +21,37 @@ from selenium import webdriver
 
 def get_model(model_type='resnet18'):
     available_models = {
-        '18': models.resnet18(pretrained=True),
-        '34': models.resnet34(pretrained=True),
-        '50': models.resnet50(pretrained=True),
-        '101': models.resnet101(pretrained=True),
-        '152': models.resnet152(pretrained=True),
-        '121': models.densenet121(pretrained=True),
-        '161': models.densenet161(pretrained=True),
-        '169': models.densenet169(pretrained=True),
-        '201': models.densenet201(pretrained=True),
-        'google': models.googlenet(pretrained=True), #only one
-        '11': models.vgg11(pretrained=True),
-        '19':models.vgg19(pretrained=True),
-        '13': models.vgg13(pretrained=True),
-        '16':models.vgg16(pretrained=True),
-        'alex':models.alexnet(pretrained=True)
+        #TODO: do i need the pre-trained models?
+        # '18': models.resnet18(weights=models.ResNet18_Weights.DEFAULT),
+        # '34': models.resnet34(weights=models.ResNet34_Weights.DEFAULT),
+        # '50': models.resnet50(weights=models.ResNet50_Weights.DEFAULT),
+        # '101': models.resnet101(weights=models.ResNet101_Weights.DEFAULT),
+        # '152': models.resnet152(weights=models.ResNet152_Weights.DEFAULT),
+        # '121': models.densenet121(weights=models.DenseNet121_Weights.DEFAULT),
+        # '161': models.densenet161(weights=models.DenseNet161_Weights.DEFAULT),
+        # '169': models.densenet169(weights=models.DenseNet169_Weights.DEFAULT),
+        # '201': models.densenet201(weights=models.DenseNet201_Weights.DEFAULT),
+        # 'google': models.googlenet(weights=models.GoogLeNet_Weights.DEFAULT), #only one
+        # '11': models.vgg11(weights=models.VGG11_Weights.DEFAULT),
+        # '19':models.vgg19(weights=models.VGG19_Weights.DEFAULT),
+        # '13': models.vgg13(weights=models.VGG13_Weights.DEFAULT),
+        # '16':models.vgg16(weights=models.VGG16_Weights.DEFAULT),
+        # 'alex':models.alexnet(weights=models.AlexNet_Weights.DEFAULT)
+        '18': models.resnet18(),
+        '34': models.resnet34(),
+        '50': models.resnet50(),
+        '101': models.resnet101(),
+        '152': models.resnet152(),
+        '121': models.densenet121(),
+        '161': models.densenet161(),
+        '169': models.densenet169(),
+        '201': models.densenet201(),
+        'google': models.googlenet(),  # only one
+        '11': models.vgg11(),
+        '19': models.vgg19(),
+        '13': models.vgg13(),
+        '16': models.vgg16(),
+        'alex': models.alexnet()
     }
     if model_type in available_models:
         return available_models[model_type]
