@@ -8,6 +8,10 @@ this is a work in progress and does not have a gui, Also the .pth file that hold
 
 https://drive.google.com/file/d/1vGT0zNjq2gkdoMsERkVfuecAPoC8v2yu/view?usp=sharing
 
+# Training
+
+I am working on a GUI, but you can train your own model in the 'training' branch. you have to do some coding, but it just involves you inputing custom values in the .pth model you are training. I have some comments explaining it in main.py. you can train with cpu but it takes forever so id only train if you have a GPU.
+
 # steps
 1: run pip install -r requirements. You need about 2.5 GB for all the packages. I recommend using an Anaconda environment or a virtual one. 
 
