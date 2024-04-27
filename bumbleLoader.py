@@ -80,7 +80,7 @@ class bumbleLoader:
         data = myData.get_architecture(arch)
         self.transform = data.transform
         self.class_labels = data.class_labels
-        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5x', pretrained=True)
+        self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         self.imget = imageGetter()
 
         #remove files at beginning

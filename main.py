@@ -14,7 +14,7 @@ def save_cookie(driver):
 
 if __name__ == "__main__":
     count = int(input("how many profiles do you want to run: "))
-    option = int(input("what do you want to do? 1 (save cookie), 2 (run normally)"))
+    option = int(input("what do you want to do? 1 (save cookie), 2 (run normally): "))
     #count = 10
     exit_flag = False
     bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_130_adam_.pth', arch='dense')
