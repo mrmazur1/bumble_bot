@@ -116,10 +116,10 @@ class bumbleLoader:
             #wait for log in button
             element = WebDriverWait(self.driver, 60).until(
                 EC.presence_of_element_located((By.XPATH,
-                                                '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a'))
+                                                '//*[@id="footer"]/div/div[1]/div[1]/a'))
             )
             self.driver.find_element(By.XPATH,
-                                '//*[@id="main"]/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div[2]/a').click()
+                                '//*[@id="footer"]/div/div[1]/div[1]/a').click()
         except TimeoutException as e:
             print(e.msg)
             self.driver.quit()
