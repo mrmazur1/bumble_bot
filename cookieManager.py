@@ -9,6 +9,7 @@ def save_cookies(driver):
     #cookies_list = driver.get_cookies()
     pickle.dump(cookies_to_save, open("cookies_new.pkl", "wb"))
 
+
 def load_cookies(driver, desk=False):
     # if desk:
     #     with open("cookies_dek.pkl", "rb") as file:

@@ -11,6 +11,7 @@ def save_cookie(driver):
     print("resuming")
     cookieManager.save_cookies(driver)
     cookieManager.load_cookies(driver)
+    
 
 
 if __name__ == "__main__":
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     option = int(input("what do you want to do? 1 (save cookie), 2 (run normally): "))
     #count = 10
     exit_flag = False
-    bl = bumbleLoader(modelType='201', modelPath='models/dense_201_64_130_adam_.pth', arch='dense')
+    bl = bumbleLoader(modelType='201', modelPath='dense_201_64_130_adam_.pth', arch='dense')
     if option == 1:
         save_cookie(bl.driver)
     start = time.monotonic()
